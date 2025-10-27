@@ -1,6 +1,11 @@
-# TSM Stock Technical Analysis Dashboard
+# Stock Watch - Technical Analysis Dashboard
 
-台積電（NYSE:TSM）股票技術分析即時儀表板，使用 TradingView 圖表展示多時間範圍和多種技術指標組合。
+股票技術分析即時儀表板，支援多個標的，使用 TradingView 圖表展示多時間範圍和多種技術指標組合。
+
+## 支援的標的
+
+- **EWT** (iShares MSCI Taiwan ETF) - `index.html`
+- **TSM** (台積電 Taiwan Semiconductor) - `tsm.html`
 
 ## 功能特點
 
@@ -18,17 +23,23 @@
 
 ### 使用方法
 
-1. 直接在瀏覽器中打開 `tsm.html` 檔案
+1. 選擇要分析的標的：
+   - EWT (台灣 ETF)：打開 `index.html`
+   - TSM (台積電)：打開 `tsm.html`
 2. 等待圖表載入完成（首次載入可能需要幾秒鐘）
-3. 開始分析 TSM 股票的技術指標
+3. 開始分析股票的技術指標
 
 ### 檔案結構
 
 ```
 stock-watch/
-├── tsm.html           # 主 HTML 檔案
-├── script_tsm.js      # TradingView 圖表配置和初始化腳本
-├── styles.css         # 樣式表（包含網格布局和主題設定）
+├── index.html         # EWT (iShares MSCI Taiwan ETF) 儀表板
+├── tsm.html           # TSM (台積電) 儀表板
+├── chart-config.js    # 唯一的 JavaScript 檔案（包含所有配置和邏輯）
+├── styles.css         # 共用樣式表（網格布局和主題設定）
+├── icons/             # 圖標資源目錄
+│   ├── ewt.png        # EWT 圖標
+│   └── tsm.svg        # TSM 圖標
 └── README.md          # 本說明文件
 ```
 
@@ -65,9 +76,46 @@ stock-watch/
 - **時區**：Asia/Taipei
 - **語言**：繁體中文（zh_TW）
 
-### Logo
+### 代碼架構
 
-SeekLogo - [tsmc](https://seeklogo.com/free-vector-logos/tsmc)
+本專案採用高度模組化的設計，**所有 JavaScript 邏輯都在一個檔案** `chart-config.js` 中：
+- **baseChartConfig**: 基礎圖表配置（主題、顏色、樣式）
+- **indicatorSets**: 四組技術指標配置
+- **column3ChartConfig**: 第三組（移動平均線）的特殊配置
+- **createChart()**: 創建圖表的通用函數
+- **initializeIfReady()**: TradingView 載入檢測函數
+- **initializeChartsAuto()**: 自動從 HTML 容器讀取配置並初始化
+
+每個標的只需要一個 HTML 檔案，在主容器上設定兩個 data 屬性：
+- `data-symbol`: 股票代碼（如 `AMEX:EWT`、`NYSE:TSM`）
+- `data-prefix`: 容器 ID 前綴（如 `ewt`、`tsm`）
+
+### 添加新標的
+
+要添加新的股票或 ETF 分析頁面，**只需要複製一個 HTML 檔案並修改 3 個地方**：
+
+1. 複製 `index.html` 並重新命名（例如 `aapl.html`）
+2. 修改以下 3 個地方：
+   - `<title>` 標題（第 6 行）
+   - `data-symbol` 屬性（第 33 行）：股票代碼，例如 `"NASDAQ:AAPL"`
+   - `data-prefix` 屬性（第 33 行）：容器前綴，例如 `"aapl"`
+3. 更新所有圖表容器的 ID（第 35-50 行）：將 `ewt` 替換為新的前綴（例如 `aapl`）
+4. （可選）更新 favicon 路徑
+
+**就這樣！不需要寫任何 JavaScript 代碼。**
+
+範例：
+```html
+<div class="charts-grid-3x4" data-symbol="NASDAQ:AAPL" data-prefix="aapl">
+  <div id="tradingview_aapl_1h_col1"></div>
+  ...
+</div>
+```
+
+### Logo 資源
+
+- TSMC Logo: [SeekLogo - tsmc](https://seeklogo.com/free-vector-logos/tsmc)
+- 其他標的 Logo 可在 [SeekLogo](https://seeklogo.com) 或 [LogoWik](https://logowik.com) 搜尋下載
 
 ### 錯誤處理
 
