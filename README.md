@@ -115,7 +115,8 @@ stock-watch/
 ### Logo 資源
 
 - TSMC Logo: [SeekLogo - tsmc](https://seeklogo.com/free-vector-logos/tsmc)
-- 其他標的 Logo 可在 [SeekLogo](https://seeklogo.com) 或 [LogoWik](https://logowik.com) 搜尋下載
+- 其他標的 Logo 可在 [SeekLogo](https://seeklogo.com) 或 [LogoWik](https://logowik.com) 搜尋下載   
+- Clearbit logo [nvda](https://logo.clearbit.com/nvidia.com) [goog](https://logo.clearbit.com/google.com) [tsla](https://logo.clearbit.com/tesla.com) [qqq](https://logo.clearbit.com/invesco.com)  
 
 ### 錯誤處理
 
