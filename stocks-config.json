@@ -1,0 +1,51 @@
+{
+  "stocks": [
+    {
+      "symbol": "AAPL",
+      "exchange": "NASDAQ",
+      "name": "Apple Inc."
+    },
+    {
+      "symbol": "GOOG", 
+      "exchange": "NASDAQ",
+      "name": "Alphabet Inc."
+    },
+    {
+      "symbol": "META",
+      "exchange": "NASDAQ", 
+      "name": "Meta Platforms Inc."
+    },
+    {
+      "symbol": "NVDA",
+      "exchange": "NASDAQ",
+      "name": "NVIDIA Corporation"
+    },
+    {
+      "symbol": "TSLA",
+      "exchange": "NASDAQ",
+      "name": "Tesla Inc."
+    },
+    {
+      "symbol": "TSM",
+      "exchange": "NYSE",
+      "name": "Taiwan Semiconductor"
+    }
+  ],
+  "newStocks": [
+    {
+      "symbol": "ORCL",
+      "exchange": "NYSE", 
+      "name": "Oracle Corporation"
+    },
+    {
+      "symbol": "MSFT",
+      "exchange": "NASDAQ",
+      "name": "Microsoft Corporation"  
+    },
+    {
+      "symbol": "AMZN",
+      "exchange": "NASDAQ",
+      "name": "Amazon.com Inc."
+    }
+  ]
+}

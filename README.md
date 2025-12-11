@@ -4,8 +4,25 @@
 
 ## 支援的標的
 
-- **EWT** (iShares MSCI Taiwan ETF) - `index.html`
-- **TSM** (台積電 Taiwan Semiconductor) - `tsm.html`
+### ETF
+- **EWT** (iShares MSCI Taiwan ETF) - `etf/ewt.html`
+- **GLD** (SPDR Gold Trust) - `etf/gld.html`
+- **QQQ** (Invesco QQQ Trust) - `etf/qqq.html`
+- **VT** (Vanguard Total World Stock ETF) - `etf/vt.html`
+- **VTI** (Vanguard Total Stock Market ETF) - `etf/vti.html`
+- **VXUS** (Vanguard Total International Stock ETF) - `etf/vxus.html`
+
+### 股票 (Stock)
+- **AAPL** (Apple Inc.) - `stock/aapl.html`
+- **GOOG** (Alphabet Inc.) - `stock/goog.html`
+- **META** (Meta Platforms Inc.) - `stock/meta.html`
+- **NVDA** (NVIDIA Corporation) - `stock/nvda.html`
+- **ORCL** (Oracle Corporation) - `stock/orcl.html`
+- **TSLA** (Tesla Inc.) - `stock/tsla.html`
+- **TSM** (Taiwan Semiconductor) - `stock/tsm.html`
+
+### 加密貨幣
+- **XAUT** (Tether Gold) - `crypto/xaut.html`
 
 ## 功能特點
 
@@ -23,23 +40,57 @@
 
 ### 使用方法
 
-1. 選擇要分析的標的：
-   - EWT (台灣 ETF)：打開 `index.html`
-   - TSM (台積電)：打開 `tsm.html`
-2. 等待圖表載入完成（首次載入可能需要幾秒鐘）
-3. 開始分析股票的技術指標
+1. **瀏覽現有標的**：
+   - ETF：打開 `etf/` 目錄下的任一檔案
+   - 股票：打開 `stock/` 目錄下的任一檔案  
+   - 加密貨幣：打開 `crypto/` 目錄下的任一檔案
+
+2. **添加新標的**：
+   ```bash
+   # 一鍵生成新股票頁面
+   node generate-stock.js MSFT
+   ```
+
+3. 等待圖表載入完成（首次載入可能需要幾秒鐘）
+4. 開始分析股票的技術指標
 
 ### 檔案結構
 
 ```
 stock-watch/
-├── index.html         # EWT (iShares MSCI Taiwan ETF) 儀表板
-├── tsm.html           # TSM (台積電) 儀表板
-├── chart-config.js    # 唯一的 JavaScript 檔案（包含所有配置和邏輯）
+├── generate-stock.js  # 🚀 股票頁面自動生成器
+├── stocks-config.json # 股票配置檔案
+├── chart-config.js    # 共用的 JavaScript 邏輯（TradingView 配置）
 ├── styles.css         # 共用樣式表（網格布局和主題設定）
-├── icons/             # 圖標資源目錄
-│   ├── ewt.png        # EWT 圖標
-│   └── tsm.svg        # TSM 圖標
+├── etf/               # ETF 分析頁面
+│   ├── ewt.html       # iShares MSCI Taiwan ETF
+│   ├── gld.html       # SPDR Gold Trust
+│   ├── qqq.html       # Invesco QQQ Trust
+│   ├── vt.html        # Vanguard Total World Stock ETF
+│   ├── vti.html       # Vanguard Total Stock Market ETF
+│   └── vxus.html      # Vanguard Total International Stock ETF
+├── stock/             # 股票分析頁面
+│   ├── aapl.html      # Apple Inc.
+│   ├── goog.html      # Alphabet Inc.
+│   ├── meta.html      # Meta Platforms Inc.
+│   ├── nvda.html      # NVIDIA Corporation
+│   ├── orcl.html      # Oracle Corporation
+│   ├── tsla.html      # Tesla Inc.
+│   └── tsm.html       # Taiwan Semiconductor
+├── crypto/            # 加密貨幣分析頁面
+│   └── xaut.html      # Tether Gold
+├── icons/             # Logo 資源目錄
+│   ├── aapl.png       # Apple Logo
+│   ├── gld.png        # Gold ETF Logo
+│   ├── goog.png       # Google Logo
+│   ├── meta.png       # Meta Logo
+│   ├── nvda.png       # NVIDIA Logo
+│   ├── orcl.png       # Oracle Logo (自動下載)
+│   ├── qqq.png        # QQQ ETF Logo
+│   ├── tsla.png       # Tesla Logo
+│   ├── tsm.svg        # TSMC Logo
+│   ├── vanguard.png   # Vanguard Logo
+│   └── xaut.svg       # Tether Gold Logo
 └── README.md          # 本說明文件
 ```
 
@@ -92,31 +143,77 @@ stock-watch/
 
 ### 添加新標的
 
-要添加新的股票或 ETF 分析頁面，**只需要複製一個 HTML 檔案並修改 3 個地方**：
+#### 方法 1：自動生成器（推薦）⭐
 
-1. 複製 `index.html` 並重新命名（例如 `aapl.html`）
+使用 `generate-stock.js` 腳本可以**一鍵生成**新的股票頁面，包含自動下載 Logo：
+
+```bash
+# 生成單個股票（自動偵測交易所）
+node generate-stock.js ORCL     # Oracle - 自動使用 NYSE
+node generate-stock.js AAPL     # Apple - 自動使用 NASDAQ
+node generate-stock.js TSM      # 台積電 - 自動使用 NYSE
+
+# 批量生成多個股票
+node generate-stock.js ORCL,MSFT,AMZN,BABA
+
+# 強制指定交易所（覆蓋預設）
+node generate-stock.js ORCL NASDAQ
+
+# 跳過 Logo 下載（更快速）
+node generate-stock.js MSFT --no-icon
+
+# 強制重新下載 Logo
+node generate-stock.js AAPL --force
+```
+
+**功能特點：**
+- ✅ **自動交易所偵測**：內建 100+ 股票的正確交易所資訊
+- ✅ **自動 Logo 下載**：嘗試多個來源，失敗時創建文字佔位符
+- ✅ **智能檔案管理**：自動處理 PNG/SVG 格式，避免重複下載
+- ✅ **批量處理**：一次生成多個股票頁面
+- ✅ **完整錯誤處理**：網路失敗、超時、格式錯誤等
+
+**內建股票資料庫包含：**
+- 科技股：AAPL, GOOG, META, NVDA, TSLA, MSFT, AMZN 等
+- 傳統企業：ORCL, IBM, CRM, V, MA 等  
+- 國際股票：TSM, BABA, NIO 等
+- 生技醫療：MRNA, PFE, JNJ 等
+
+#### 方法 2：手動複製（傳統方式）
+
+要手動添加新的股票或 ETF 分析頁面：
+
+1. 複製 `stock/aapl.html` 並重新命名（例如 `stock/msft.html`）
 2. 修改以下 3 個地方：
-   - `<title>` 標題（第 6 行）
-   - `data-symbol` 屬性（第 33 行）：股票代碼，例如 `"NASDAQ:AAPL"`
-   - `data-prefix` 屬性（第 33 行）：容器前綴，例如 `"aapl"`
-3. 更新所有圖表容器的 ID（第 35-50 行）：將 `ewt` 替換為新的前綴（例如 `aapl`）
-4. （可選）更新 favicon 路徑
+   - `<title>` 標題：`MSFT Stock Technical Analysis`
+   - `data-symbol` 屬性：股票代碼，例如 `"NASDAQ:MSFT"`
+   - `data-prefix` 屬性：容器前綴，例如 `"msft"`
+3. 更新所有圖表容器的 ID：將 `aapl` 替換為新的前綴（例如 `msft`）
+4. 添加對應的 Logo 到 `icons/` 目錄
 
 **就這樣！不需要寫任何 JavaScript 代碼。**
 
 範例：
 ```html
-<div class="charts-grid-3x4" data-symbol="NASDAQ:AAPL" data-prefix="aapl">
-  <div id="tradingview_aapl_1h_col1"></div>
+<div class="charts-grid-3x4" data-symbol="NASDAQ:MSFT" data-prefix="msft">
+  <div id="tradingview_msft_1h_col1"></div>
   ...
 </div>
 ```
 
 ### Logo 資源
 
+**自動下載（推薦）：**
+使用 `generate-stock.js` 會自動嘗試從多個來源下載 Logo：
+- Brandfetch API
+- Logo.dev API  
+- Clearbit API
+- Favicone API
+
+**手動下載：**
 - TSMC Logo: [SeekLogo - tsmc](https://seeklogo.com/free-vector-logos/tsmc)
 - 其他標的 Logo 可在 [SeekLogo](https://seeklogo.com) 或 [LogoWik](https://logowik.com) 搜尋下載   
-- Clearbit logo [nvda](https://logo.clearbit.com/nvidia.com) [goog](https://logo.clearbit.com/google.com) [tsla](https://logo.clearbit.com/tesla.com) [qqq](https://logo.clearbit.com/invesco.com)  
+- Clearbit logo 範例：[nvda](https://logo.clearbit.com/nvidia.com) [goog](https://logo.clearbit.com/google.com) [tsla](https://logo.clearbit.com/tesla.com) [qqq](https://logo.clearbit.com/invesco.com)  
 
 ### 錯誤處理
 
