@@ -111,6 +111,7 @@ const stockDatabase = {
   'RIVN': { exchange: 'NASDAQ', domain: 'rivian.com', name: 'Rivian Automotive Inc.' },
   'LCID': { exchange: 'NASDAQ', domain: 'lucidmotors.com', name: 'Lucid Group Inc.' },
   'CMCSA': { exchange: 'NASDAQ', domain: 'comcast.com', name: 'Comcast Corporation' },
+  'HON': { exchange: 'NASDAQ', domain: 'honeywell.com', name: 'Honeywell International Inc.' },
 
   // 傳統科技與企業 - NYSE
   'ORCL': { exchange: 'NYSE', domain: 'oracle.com', name: 'Oracle Corporation' },
@@ -152,14 +153,6 @@ const stockDatabase = {
   'VZ': { exchange: 'NYSE', domain: 'verizon.com', name: 'Verizon Communications Inc.' }
 };
 
-// Logo 來源配置 (按優先順序)
-const logoSources = [
-  (symbol) => `https://img.brandfetch.io/${getCompanyDomain(symbol)}`,
-  (symbol) => `https://img.logo.dev/${getCompanyDomain(symbol)}`,
-  (symbol) => `https://logo.clearbit.com/${getCompanyDomain(symbol)}`,
-  (symbol) => `https://favicone.com/${getCompanyDomain(symbol)}`,
-];
-
 // 獲取股票完整資訊
 function getStockInfo(symbol) {
   const symbolUpper = symbol.toUpperCase();
@@ -175,44 +168,72 @@ function getCompanyDomain(symbol) {
   return stockInfo.domain;
 }
 
+// 從域名提取公司名稱 (如 netflix.com -> netflix)
+function getCompanyName(symbol) {
+  const domain = getCompanyDomain(symbol);
+  // 移除 .com, .net, .io 等後綴
+  return domain.split('.')[0];
+}
+
+// Logo 來源配置 (按優先順序)
+const logoSources = [
+  // TradingView CDN - 最可靠的來源
+  (symbol) => `https://s3-symbol-logo.tradingview.com/${getCompanyName(symbol)}.svg`,
+  (symbol) => `https://s3-symbol-logo.tradingview.com/${getCompanyName(symbol)}--big.svg`,
+
+  // 備用來源 - 按可靠性排序
+  (symbol) => `https://logo.clearbit.com/${getCompanyDomain(symbol)}`,
+  (symbol) => `https://img.logo.dev/${getCompanyDomain(symbol)}`,
+
+  // 簡單的 favicon 作為最後選擇
+  (symbol) => `https://${getCompanyDomain(symbol)}/favicon.ico`,
+];
+
 // 下載 Logo 的函數
 async function downloadLogo(symbol, force = false) {
   const symbolLower = symbol.toLowerCase();
-  const iconPath = path.join(__dirname, 'icons', `${symbolLower}.png`);
-  
-  // 如果 icon 已存在且不強制更新，跳過
-  if (fs.existsSync(iconPath) && !force) {
-    console.log(`📁 Icon 已存在: icons/${symbolLower}.png`);
+  const iconsDir = path.join(__dirname, 'icons');
+
+  // 檢查是否已存在 SVG 或 PNG 格式的 icon
+  const svgPath = path.join(iconsDir, `${symbolLower}.svg`);
+  const pngPath = path.join(iconsDir, `${symbolLower}.png`);
+
+  if (!force && (fs.existsSync(svgPath) || fs.existsSync(pngPath))) {
+    const existingFormat = fs.existsSync(svgPath) ? 'svg' : 'png';
+    console.log(`📁 Icon 已存在: icons/${symbolLower}.${existingFormat}`);
     return true;
   }
-  
+
   // 確保 icons 目錄存在
-  const iconsDir = path.join(__dirname, 'icons');
   if (!fs.existsSync(iconsDir)) {
     fs.mkdirSync(iconsDir, { recursive: true });
   }
-  
+
   console.log(`🔍 正在搜尋 ${symbol} 的 Logo...`);
-  
+
   // 嘗試各個 Logo 來源
   for (let i = 0; i < logoSources.length; i++) {
     const logoUrl = logoSources[i](symbol);
     console.log(`   嘗試來源 ${i + 1}: ${logoUrl}`);
-    
+
     try {
+      // 根據 URL 決定文件類型
+      const fileExt = logoUrl.endsWith('.svg') ? 'svg' : 'png';
+      const iconPath = path.join(iconsDir, `${symbolLower}.${fileExt}`);
+
       const success = await downloadFromUrl(logoUrl, iconPath);
       if (success) {
-        console.log(`✅ Logo 下載成功: icons/${symbolLower}.png`);
+        console.log(`✅ Logo 下載成功: icons/${symbolLower}.${fileExt}`);
         return true;
       }
     } catch (error) {
       console.log(`   ❌ 來源 ${i + 1} 失敗: ${error.message}`);
     }
   }
-  
+
   // 所有來源都失敗，創建佔位符
   console.log(`⚠️  無法下載 ${symbol} 的 Logo，創建佔位符`);
-  createPlaceholderIcon(symbolLower, iconPath);
+  createPlaceholderIcon(symbolLower, svgPath);
   return false;
 }
 
@@ -224,17 +245,24 @@ function downloadFromUrl(url, filePath) {
     const request = https.get(url, (response) => {
       // 檢查回應狀態
       if (response.statusCode !== 200) {
+        file.close();
+        fs.unlink(filePath, () => {});
         reject(new Error(`HTTP ${response.statusCode}`));
         return;
       }
-      
-      // 檢查內容類型
-      const contentType = response.headers['content-type'];
-      if (!contentType || !contentType.startsWith('image/')) {
-        reject(new Error(`不是圖片格式: ${contentType}`));
+
+      // 檢查內容類型（放寬限制以支持各種格式）
+      const contentType = response.headers['content-type'] || '';
+      const validTypes = ['image/', 'text/xml', 'application/octet-stream', 'text/plain'];
+      const isValidType = validTypes.some(type => contentType.includes(type));
+
+      if (!isValidType && contentType) {
+        file.close();
+        fs.unlink(filePath, () => {});
+        reject(new Error(`不支援的格式: ${contentType}`));
         return;
       }
-      
+
       response.pipe(file);
       
       file.on('finish', () => {
