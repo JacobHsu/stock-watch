@@ -48,6 +48,7 @@ const stockDatabase = {
   'PAYX': { exchange: 'NASDAQ', domain: 'paychex.com', name: 'Paychex Inc.' },
   'WBD': { exchange: 'NASDAQ', domain: 'wbd.com', name: 'Warner Bros. Discovery Inc.' },
   'CEG': { exchange: 'NASDAQ', domain: 'constellationenergy.com', name: 'Constellation Energy Corporation' },
+  'FAST': { exchange: 'NASDAQ', domain: 'fastenal.com', name: 'Fastenal Company' },
 
   // ========== 傳統科技與企業 - NYSE ==========
   'ORCL': { exchange: 'NYSE', domain: 'oracle.com', name: 'Oracle Corporation' },
