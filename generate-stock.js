@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const { stockDatabase } = require('./stock-database.js');
 
 // 股票模板
 const stockTemplate = `<!DOCTYPE html>
@@ -69,89 +70,8 @@ const stockTemplate = `<!DOCTYPE html>
 </html>
 `;
 
-// 完整的股票資料庫 (包含交易所和域名)
-const stockDatabase = {
-  // 科技股 - NASDAQ
-  'AAPL': { exchange: 'NASDAQ', domain: 'apple.com', name: 'Apple Inc.' },
-  'GOOG': { exchange: 'NASDAQ', domain: 'google.com', name: 'Alphabet Inc.' },
-  'GOOGL': { exchange: 'NASDAQ', domain: 'google.com', name: 'Alphabet Inc.' },
-  'META': { exchange: 'NASDAQ', domain: 'meta.com', name: 'Meta Platforms Inc.' },
-  'NVDA': { exchange: 'NASDAQ', domain: 'nvidia.com', name: 'NVIDIA Corporation' },
-  'TSLA': { exchange: 'NASDAQ', domain: 'tesla.com', name: 'Tesla Inc.' },
-  'MSFT': { exchange: 'NASDAQ', domain: 'microsoft.com', name: 'Microsoft Corporation' },
-  'AMZN': { exchange: 'NASDAQ', domain: 'amazon.com', name: 'Amazon.com Inc.' },
-  'NFLX': { exchange: 'NASDAQ', domain: 'netflix.com', name: 'Netflix Inc.' },
-  'ADBE': { exchange: 'NASDAQ', domain: 'adobe.com', name: 'Adobe Inc.' },
-  'INTC': { exchange: 'NASDAQ', domain: 'intel.com', name: 'Intel Corporation' },
-  'AMD': { exchange: 'NASDAQ', domain: 'amd.com', name: 'Advanced Micro Devices' },
-  'QCOM': { exchange: 'NASDAQ', domain: 'qualcomm.com', name: 'QUALCOMM Incorporated' },
-  'AVGO': { exchange: 'NASDAQ', domain: 'broadcom.com', name: 'Broadcom Inc.' },
-  'CSCO': { exchange: 'NASDAQ', domain: 'cisco.com', name: 'Cisco Systems Inc.' },
-  'PYPL': { exchange: 'NASDAQ', domain: 'paypal.com', name: 'PayPal Holdings Inc.' },
-  'SHOP': { exchange: 'NASDAQ', domain: 'shopify.com', name: 'Shopify Inc.' },
-  'ABNB': { exchange: 'NASDAQ', domain: 'airbnb.com', name: 'Airbnb Inc.' },
-  'ZOOM': { exchange: 'NASDAQ', domain: 'zoom.us', name: 'Zoom Video Communications' },
-  'ZM': { exchange: 'NASDAQ', domain: 'zoom.us', name: 'Zoom Video Communications' },
-  'DOCU': { exchange: 'NASDAQ', domain: 'docusign.com', name: 'DocuSign Inc.' },
-  'ROKU': { exchange: 'NASDAQ', domain: 'roku.com', name: 'Roku Inc.' },
-  'CRWD': { exchange: 'NASDAQ', domain: 'crowdstrike.com', name: 'CrowdStrike Holdings Inc.' },
-  'OKTA': { exchange: 'NASDAQ', domain: 'okta.com', name: 'Okta Inc.' },
-  'DDOG': { exchange: 'NASDAQ', domain: 'datadoghq.com', name: 'Datadog Inc.' },
-  'MDB': { exchange: 'NASDAQ', domain: 'mongodb.com', name: 'MongoDB Inc.' },
-  'TEAM': { exchange: 'NASDAQ', domain: 'atlassian.com', name: 'Atlassian Corporation' },
-  'WDAY': { exchange: 'NASDAQ', domain: 'workday.com', name: 'Workday Inc.' },
-  'SPLK': { exchange: 'NASDAQ', domain: 'splunk.com', name: 'Splunk Inc.' },
-  'PANW': { exchange: 'NASDAQ', domain: 'paloaltonetworks.com', name: 'Palo Alto Networks Inc.' },
-  'FTNT': { exchange: 'NASDAQ', domain: 'fortinet.com', name: 'Fortinet Inc.' },
-  'TXN': { exchange: 'NASDAQ', domain: 'ti.com', name: 'Texas Instruments Incorporated' },
-  'LYFT': { exchange: 'NASDAQ', domain: 'lyft.com', name: 'Lyft Inc.' },
-  'COST': { exchange: 'NASDAQ', domain: 'costco.com', name: 'Costco Wholesale Corporation' },
-  'MRNA': { exchange: 'NASDAQ', domain: 'modernatx.com', name: 'Moderna Inc.' },
-  'LI': { exchange: 'NASDAQ', domain: 'lixiang.com', name: 'Li Auto Inc.' },
-  'RIVN': { exchange: 'NASDAQ', domain: 'rivian.com', name: 'Rivian Automotive Inc.' },
-  'LCID': { exchange: 'NASDAQ', domain: 'lucidmotors.com', name: 'Lucid Group Inc.' },
-  'CMCSA': { exchange: 'NASDAQ', domain: 'comcast.com', name: 'Comcast Corporation' },
-  'HON': { exchange: 'NASDAQ', domain: 'honeywell.com', name: 'Honeywell International Inc.' },
-
-  // 傳統科技與企業 - NYSE
-  'ORCL': { exchange: 'NYSE', domain: 'oracle.com', name: 'Oracle Corporation' },
-  'IBM': { exchange: 'NYSE', domain: 'ibm.com', name: 'International Business Machines' },
-  'CRM': { exchange: 'NYSE', domain: 'salesforce.com', name: 'Salesforce Inc.' },
-  'NOW': { exchange: 'NYSE', domain: 'servicenow.com', name: 'ServiceNow Inc.' },
-  'UBER': { exchange: 'NYSE', domain: 'uber.com', name: 'Uber Technologies Inc.' },
-  'SNOW': { exchange: 'NYSE', domain: 'snowflake.com', name: 'Snowflake Inc.' },
-  'PLTR': { exchange: 'NYSE', domain: 'palantir.com', name: 'Palantir Technologies Inc.' },
-  'RBLX': { exchange: 'NYSE', domain: 'roblox.com', name: 'Roblox Corporation' },
-  'U': { exchange: 'NYSE', domain: 'unity.com', name: 'Unity Software Inc.' },
-  'SNAP': { exchange: 'NYSE', domain: 'snap.com', name: 'Snap Inc.' },
-  'PINS': { exchange: 'NYSE', domain: 'pinterest.com', name: 'Pinterest Inc.' },
-  'SPOT': { exchange: 'NYSE', domain: 'spotify.com', name: 'Spotify Technology S.A.' },
-  'VEEV': { exchange: 'NYSE', domain: 'veeva.com', name: 'Veeva Systems Inc.' },
-  'NET': { exchange: 'NYSE', domain: 'cloudflare.com', name: 'Cloudflare Inc.' },
-  'FSLY': { exchange: 'NYSE', domain: 'fastly.com', name: 'Fastly Inc.' },
-  'ESTC': { exchange: 'NYSE', domain: 'elastic.co', name: 'Elastic N.V.' },
-
-  // 金融 - NYSE
-  'V': { exchange: 'NYSE', domain: 'visa.com', name: 'Visa Inc.' },
-  'MA': { exchange: 'NYSE', domain: 'mastercard.com', name: 'Mastercard Incorporated' },
-  'SQ': { exchange: 'NYSE', domain: 'squareup.com', name: 'Block Inc.' },
-
-  // 國際股票 - NYSE
-  'TSM': { exchange: 'NYSE', domain: 'tsmc.com', name: 'Taiwan Semiconductor Manufacturing' },
-  'BABA': { exchange: 'NYSE', domain: 'alibaba.com', name: 'Alibaba Group Holding Limited' },
-  'NIO': { exchange: 'NYSE', domain: 'nio.com', name: 'NIO Inc.' },
-  'XPEV': { exchange: 'NYSE', domain: 'xiaopeng.com', name: 'XPeng Inc.' },
-
-  // 傳統產業 - NYSE
-  'WMT': { exchange: 'NYSE', domain: 'walmart.com', name: 'Walmart Inc.' },
-  'TGT': { exchange: 'NYSE', domain: 'target.com', name: 'Target Corporation' },
-  'PFE': { exchange: 'NYSE', domain: 'pfizer.com', name: 'Pfizer Inc.' },
-  'JNJ': { exchange: 'NYSE', domain: 'jnj.com', name: 'Johnson & Johnson' },
-  'ABBV': { exchange: 'NYSE', domain: 'abbvie.com', name: 'AbbVie Inc.' },
-  'DIS': { exchange: 'NYSE', domain: 'disney.com', name: 'The Walt Disney Company' },
-  'T': { exchange: 'NYSE', domain: 'att.com', name: 'AT&T Inc.' },
-  'VZ': { exchange: 'NYSE', domain: 'verizon.com', name: 'Verizon Communications Inc.' }
-};
+// 股票資料庫從外部檔案載入 (stock-database.js)
+// 在 stock-database.js 中統一管理，方便維護
 
 // 獲取股票完整資訊
 function getStockInfo(symbol) {
@@ -169,8 +89,15 @@ function getCompanyDomain(symbol) {
 }
 
 // 從域名提取公司名稱 (如 netflix.com -> netflix)
+// 或使用自訂的 logoName（如果有指定）
 function getCompanyName(symbol) {
-  const domain = getCompanyDomain(symbol);
+  const stockInfo = getStockInfo(symbol);
+  // 優先使用自訂的 logoName
+  if (stockInfo.logoName) {
+    return stockInfo.logoName;
+  }
+  // 否則從 domain 提取
+  const domain = stockInfo.domain;
   // 移除 .com, .net, .io 等後綴
   return domain.split('.')[0];
 }
@@ -305,131 +232,171 @@ function createPlaceholderIcon(symbolLower, iconPath) {
   console.log(`📝 已創建佔位符: icons/${symbolLower}.svg`);
 }
 
-async function generateStock(symbol, exchange = null, downloadIcon = true) {
+async function generateStock(symbol, exchange = null, options = {}) {
+  const { downloadIcon = true, generateHtml = false, force = false } = options;
   const symbolLower = symbol.toLowerCase();
   const symbolUpper = symbol.toUpperCase();
-  
+
   // 如果沒有指定交易所，從資料庫獲取
   const stockInfo = getStockInfo(symbol);
   const finalExchange = exchange || stockInfo.exchange;
-  
-  console.log(`\n🚀 正在生成 ${symbolUpper} 股票頁面...`);
+
+  console.log(`\n🚀 正在處理 ${symbolUpper}...`);
   console.log(`📊 公司名稱: ${stockInfo.name}`);
   console.log(`🏛️  交易所: ${finalExchange}`);
-  
+
   // 1. 下載 Logo (如果需要)
   if (downloadIcon) {
-    await downloadLogo(symbol);
+    await downloadLogo(symbol, force);
   }
-  
+
   // 2. 檢查 icon 檔案存在性並決定副檔名
   const iconDir = path.join(__dirname, 'icons');
   let iconExtension = 'png';
-  
+
   if (fs.existsSync(path.join(iconDir, `${symbolLower}.svg`))) {
     iconExtension = 'svg';
   } else if (!fs.existsSync(path.join(iconDir, `${symbolLower}.png`))) {
     console.log(`⚠️  找不到 ${symbolLower} 的 icon 檔案`);
   }
-  
-  // 3. 替換模板中的變數
-  let content = stockTemplate
-    .replace(/{{SYMBOL}}/g, symbolUpper)
-    .replace(/{{SYMBOL_LOWER}}/g, symbolLower)
-    .replace(/{{EXCHANGE}}/g, finalExchange)
-    .replace(/{{ICON_EXT}}/g, iconExtension);
-  
-  // 4. 確保 stock 目錄存在
-  const stockDir = path.join(__dirname, 'stock');
-  if (!fs.existsSync(stockDir)) {
-    fs.mkdirSync(stockDir, { recursive: true });
-  }
-  
-  // 5. 寫入檔案
-  const filePath = path.join(stockDir, `${symbolLower}.html`);
-  fs.writeFileSync(filePath, content, 'utf8');
-  
-  console.log(`✅ 已生成: stock/${symbolLower}.html`);
-  console.log(`📊 股票代碼: ${finalExchange}:${symbolUpper}`);
-  console.log(`🔗 URL: stock/${symbolLower}.html`);
+
   console.log(`🎨 Icon: icons/${symbolLower}.${iconExtension}`);
-  
-  return filePath;
+
+  // 3. 生成 HTML（僅在指定 --html 時）
+  if (generateHtml) {
+    // 替換模板中的變數
+    let content = stockTemplate
+      .replace(/{{SYMBOL}}/g, symbolUpper)
+      .replace(/{{SYMBOL_LOWER}}/g, symbolLower)
+      .replace(/{{EXCHANGE}}/g, finalExchange)
+      .replace(/{{ICON_EXT}}/g, iconExtension);
+
+    // 確保 stock 目錄存在
+    const stockDir = path.join(__dirname, 'stock');
+    if (!fs.existsSync(stockDir)) {
+      fs.mkdirSync(stockDir, { recursive: true });
+    }
+
+    // 寫入檔案
+    const filePath = path.join(stockDir, `${symbolLower}.html`);
+    fs.writeFileSync(filePath, content, 'utf8');
+
+    console.log(`✅ 已生成 HTML: stock/${symbolLower}.html`);
+    console.log(`🔗 靜態 URL: stock/${symbolLower}.html`);
+  } else {
+    console.log(`ℹ️  僅下載 icon（使用動態版: stock/?symbol=${symbolUpper}）`);
+  }
+
+  return symbolLower;
 }
 
 // 批量生成股票頁面
-async function generateMultipleStocks(stocks, downloadIcons = true) {
-  console.log(`🚀 開始生成 ${stocks.length} 個股票頁面...\n`);
-  
+async function generateMultipleStocks(stocks, options = {}) {
+  const { downloadIcons = true, generateHtml = false } = options;
+  const mode = generateHtml ? 'Icon + HTML' : '僅 Icon';
+
+  console.log(`🚀 開始處理 ${stocks.length} 個股票（模式: ${mode}）...\n`);
+
   for (let i = 0; i < stocks.length; i++) {
     const stock = stocks[i];
-    const { symbol, exchange = null } = typeof stock === 'string' 
-      ? { symbol: stock } 
+    const { symbol, exchange = null } = typeof stock === 'string'
+      ? { symbol: stock }
       : stock;
-    
+
     console.log(`[${i + 1}/${stocks.length}]`);
-    await generateStock(symbol, exchange, downloadIcons);
-    
+    await generateStock(symbol, exchange, { downloadIcons, generateHtml });
+
     // 避免請求過於頻繁
     if (downloadIcons && i < stocks.length - 1) {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
-  
-  console.log('\n🎉 所有股票頁面生成完成！');
+
+  console.log(`\n🎉 完成！已處理 ${stocks.length} 個股票`);
+  if (generateHtml) {
+    console.log(`📄 靜態 HTML: stock/[symbol].html`);
+  }
+  console.log(`🌐 動態版: stock/?symbol=[SYMBOL]`);
 }
 
 // 命令行使用
 if (require.main === module) {
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0) {
     console.log(`
-📈 股票頁面生成器 (含 Logo 自動下載)
+📈 股票 Icon 下載器 + HTML 生成器 (改良版)
+
+🎯 預設行為: 只下載 icon（配合動態版使用）
 
 使用方式:
-  node generate-stock.js ORCL                    # 自動使用正確交易所 (NYSE)
-  node generate-stock.js ORCL NASDAQ             # 強制指定交易所 (覆蓋預設)
-  node generate-stock.js ORCL,MSFT,AMZN         # 批量生成 (自動交易所)
-  node generate-stock.js ORCL --no-icon         # 跳過 Logo 下載
+  node generate-stock.js TSM                     # 只下載 icon
+  node generate-stock.js TSM --html              # 下載 icon + 生成靜態 HTML
+  node generate-stock.js TSM,AAPL,GOOG           # 批量下載 icon
+  node generate-stock.js TSM,AAPL,GOOG --html    # 批量下載 icon + 生成 HTML
 
 參數:
-  --no-icon    跳過 Logo 下載，使用現有 icon 或創建佔位符
-  --force      強制重新下載 Logo (覆蓋現有檔案)
+  --html       生成靜態 HTML 檔案（預設只下載 icon）
+  --no-icon    跳過 icon 下載（僅生成 HTML，需搭配 --html）
+  --force      強制重新下載 icon（覆蓋現有檔案）
+  NASDAQ/NYSE  強制指定交易所（覆蓋預設）
 
 範例:
-  node generate-stock.js ORCL                   # 自動使用 NYSE
-  node generate-stock.js TSM                    # 自動使用 NYSE  
-  node generate-stock.js AAPL                   # 自動使用 NASDAQ
-  node generate-stock.js "ORCL:NASDAQ,TSM:NYSE" # 強制指定交易所
-  node generate-stock.js ORCL --no-icon
-  node generate-stock.js MSFT --force
+  # 新增股票（只要 icon，用動態版）
+  node generate-stock.js SBUX
+  → 下載 icons/sbux.svg
+  → 訪問 stock/?symbol=SBUX
+
+  # 新增股票（需要靜態 HTML）
+  node generate-stock.js SBUX --html
+  → 下載 icons/sbux.svg
+  → 生成 stock/sbux.html
+
+  # 批量新增股票（只要 icon）
+  node generate-stock.js SBUX,DIS,NFLX
+  → 下載所有 icons
+  → 訪問 stock/?symbol=SBUX 等
+
+  # 批量新增股票（包含 HTML）
+  node generate-stock.js SBUX,DIS,NFLX --html
+  → 下載所有 icons + 生成所有 HTML
+
+  # 強制指定交易所
+  node generate-stock.js ORCL NYSE
+  node generate-stock.js "ORCL:NASDAQ,TSM:NYSE" --html
+
+💡 提示:
+  - 現在有動態版（stock/?symbol=XXX），大多數情況只需要 icon
+  - 只有需要靜態頁面時才加 --html 參數
     `);
     process.exit(1);
   }
-  
+
   const input = args[0];
   const flags = args.slice(1);
   const downloadIcons = !flags.includes('--no-icon');
+  const generateHtml = flags.includes('--html');
   const force = flags.includes('--force');
-  
+
   // 解析交易所 (如果不是 flag)
   const exchange = flags.find(f => !f.startsWith('--')) || null;
-  
+
   async function run() {
+    const options = { downloadIcons, generateHtml, force };
+
     if (input.includes(',')) {
       // 批量處理
       const stocks = input.split(',').map(item => {
         const [symbol, ex] = item.trim().split(':');
         return { symbol, exchange: ex || exchange };
       });
-      await generateMultipleStocks(stocks, downloadIcons);
+      await generateMultipleStocks(stocks, options);
     } else {
       // 單個處理
-      await generateStock(input, exchange, downloadIcons);
+      await generateStock(input, exchange, options);
     }
   }
-  
+
   run().catch(console.error);
 }
 

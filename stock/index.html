@@ -7,25 +7,11 @@
     <link rel="icon" type="image/png" id="favicon" href="../icons/default.png">
     <link rel="stylesheet" href="../styles.css" />
 
+    <!-- 載入股票資料庫 -->
+    <script src="../stock-database.js"></script>
+
     <script>
-      // ========== 股票資料庫 ==========
-      const stockDatabase = {
-        'AAPL': { exchange: 'NASDAQ', domain: 'apple.com', name: 'Apple Inc.' },
-        'GOOG': { exchange: 'NASDAQ', domain: 'google.com', name: 'Alphabet Inc.' },
-        'META': { exchange: 'NASDAQ', domain: 'meta.com', name: 'Meta Platforms Inc.' },
-        'NVDA': { exchange: 'NASDAQ', domain: 'nvidia.com', name: 'NVIDIA Corporation' },
-        'TSLA': { exchange: 'NASDAQ', domain: 'tesla.com', name: 'Tesla Inc.' },
-        'MSFT': { exchange: 'NASDAQ', domain: 'microsoft.com', name: 'Microsoft Corporation' },
-        'NFLX': { exchange: 'NASDAQ', domain: 'netflix.com', name: 'Netflix Inc.' },
-        'AVGO': { exchange: 'NASDAQ', domain: 'broadcom.com', name: 'Broadcom Inc.' },
-        'MU': { exchange: 'NASDAQ', domain: 'micron.com', name: 'Micron Technology Inc.' },
-        'HON': { exchange: 'NASDAQ', domain: 'honeywell.com', name: 'Honeywell International Inc.' },
-        'PAYX': { exchange: 'NASDAQ', domain: 'paychex.com', name: 'Paychex Inc.' },
-        'WBD': { exchange: 'NASDAQ', domain: 'wbd.com', name: 'Warner Bros. Discovery Inc.' },
-        'CEG': { exchange: 'NASDAQ', domain: 'constellationenergy.com', name: 'Constellation Energy Corporation' },
-        'ORCL': { exchange: 'NYSE', domain: 'oracle.com', name: 'Oracle Corporation' },
-        'TSM': { exchange: 'NYSE', domain: 'tsmc.com', name: 'Taiwan Semiconductor Manufacturing' },
-      };
+      // stockDatabase 已從 stock-database.js 載入
 
       // ========== 核心函數 ==========
       function getSymbolFromUrl() {
@@ -72,22 +58,117 @@
     <script>
       // ========== 生成頁面內容 ==========
       if (!SYMBOL) {
-        // 沒有股票代碼，顯示選擇頁面
+        // 沒有股票代碼，顯示選擇頁面（先顯示載入中，然後檢查 icons）
         document.write(`
-          <div style="padding: 40px; text-align: center; color: #fff; font-family: Arial;">
-            <h1>⚠️ 缺少股票代碼</h1>
-            <p>請在 URL 中指定股票代碼，例如：</p>
-            <code style="background: #2a2e39; padding: 10px; display: inline-block; border-radius: 5px;">
-              ?symbol=TSM
-            </code>
-            <h3 style="margin-top: 30px;">可用的股票：</h3>
-            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px;">
-              ${Object.keys(stockDatabase).sort().map(s =>
-                `<a href="?symbol=${s}" style="background: #2a2e39; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #fff;">${s}</a>`
-              ).join('')}
+          <div id="stock-selector" style="padding: 40px; text-align: center; color: #fff; font-family: Arial;">
+            <h1>📈 Stock Watch</h1>
+            <p>正在載入股票列表...</p>
+            <div style="margin-top: 20px;">
+              <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #2a2e39; border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
             </div>
+            <style>
+              @keyframes spin {
+                to { transform: rotate(360deg); }
+              }
+            </style>
           </div>
         `);
+
+        // 異步檢查 icons 並更新頁面
+        (async function() {
+          // 檢查 icon 是否存在並判斷是否為佔位符
+          async function checkIconExists(symbol) {
+            const symbolLower = symbol.toLowerCase();
+
+            // 先試 SVG
+            try {
+              const svgResponse = await fetch(`../icons/${symbolLower}.svg`);
+              if (svgResponse.ok) {
+                const svgText = await svgResponse.text();
+                const size = svgText.length;
+
+                // 檢測佔位符特徵：包含 #1a1a1a 背景色且有 <text> 元素
+                const isPlaceholder = (
+                  size < 350 &&
+                  svgText.includes('#1a1a1a') &&
+                  svgText.includes('<text') &&
+                  svgText.includes(symbol.toUpperCase())
+                );
+
+                return { exists: true, format: 'svg', isPlaceholder };
+              }
+            } catch (e) {}
+
+            // 再試 PNG
+            try {
+              const pngResponse = await fetch(`../icons/${symbolLower}.png`, { method: 'HEAD' });
+              if (pngResponse.ok) {
+                return { exists: true, format: 'png', isPlaceholder: false };
+              }
+            } catch (e) {}
+
+            return { exists: false };
+          }
+
+          // 檢查所有股票
+          const stocksWithStatus = await Promise.all(
+            Object.keys(stockDatabase).sort().map(async (s) => ({
+              symbol: s,
+              name: stockDatabase[s].name,
+              iconStatus: await checkIconExists(s)
+            }))
+          );
+
+          const withIcons = stocksWithStatus.filter(s => s.iconStatus.exists && !s.iconStatus.isPlaceholder);
+          const withPlaceholders = stocksWithStatus.filter(s => s.iconStatus.exists && s.iconStatus.isPlaceholder);
+          const withoutIcons = stocksWithStatus.filter(s => !s.iconStatus.exists);
+
+          // 更新頁面
+          document.getElementById('stock-selector').innerHTML = `
+            <h1>📈 Stock Watch</h1>
+            <p>請選擇股票代碼或使用 URL：<code style="background: #2a2e39; padding: 5px 10px; border-radius: 3px;">?symbol=TSM</code></p>
+
+            ${withIcons.length > 0 ? `
+              <div style="margin-top: 30px;">
+                <h3>✅ 可用股票（${withIcons.length}）</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;">
+                  ${withIcons.map(s =>
+                    `<a href="?symbol=${s.symbol}" title="${s.name}" style="background: #2a2e39; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #fff; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#3a3e49'" onmouseout="this.style.background='#2a2e39'">
+                      <img src="../icons/${s.symbol.toLowerCase()}.${s.iconStatus.format}" width="20" height="20" style="border-radius: 3px;" onerror="this.style.display='none'">
+                      ${s.symbol}
+                    </a>`
+                  ).join('')}
+                </div>
+              </div>
+            ` : ''}
+
+            ${withPlaceholders.length > 0 ? `
+              <div style="margin-top: 30px; opacity: 0.7;">
+                <h3>⚠️ 使用佔位符 Icon（${withPlaceholders.length}）</h3>
+                <p style="font-size: 14px; color: #888;">這些股票的 Icon 下載失敗，使用預設佔位符</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;">
+                  ${withPlaceholders.map(s =>
+                    `<a href="?symbol=${s.symbol}" title="${s.name}" style="background: #3a3e49; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #aaa;">${s.symbol}</a>`
+                  ).join('')}
+                </div>
+                <p style="font-size: 12px; color: #666; margin-top: 10px; font-family: monospace;">node generate-stock.js ${withPlaceholders.map(s => s.symbol).join(',')}</p>
+              </div>
+            ` : ''}
+
+            ${withoutIcons.length > 0 ? `
+              <div style="margin-top: 30px; opacity: 0.5;">
+                <h3>❌ 缺少 Icon（${withoutIcons.length}）</h3>
+                <p style="font-size: 14px; color: #888;">需要先生成 Icon 才能使用</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;">
+                  ${withoutIcons.map(s =>
+                    `<span title="${s.name}" style="background: #2a2e39; padding: 8px 15px; border-radius: 5px; color: #666; cursor: not-allowed;">${s.symbol}</span>`
+                  ).join('')}
+                </div>
+                <p style="font-size: 12px; color: #666; margin-top: 10px; font-family: monospace;">node generate-stock.js ${withoutIcons.map(s => s.symbol).join(',')}</p>
+              </div>
+            ` : ''}
+          `;
+        })();
       } else {
         // 有股票代碼，生成圖表容器
         document.title = `${SYMBOL} Stock Technical Analysis`;
