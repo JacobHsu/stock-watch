@@ -76,18 +76,39 @@
 
         // 異步檢查 icons 並更新頁面
         (async function() {
-          // 檢查 icon 是否存在並判斷是否為佔位符
-          async function checkIconExists(symbol) {
+          // 獲取 icon URL（優先 CDN，備援本地）
+          function getIconUrl(symbol, stockInfo) {
             const symbolLower = symbol.toLowerCase();
+            const logoName = stockInfo.logoName || stockInfo.domain.split('.')[0];
 
-            // 先試 SVG
+            // 返回多重備援 URL
+            return {
+              cdn: `https://s3-symbol-logo.tradingview.com/${logoName}.svg`,
+              localSvg: `../icons/${symbolLower}.svg`,
+              localPng: `../icons/${symbolLower}.png`
+            };
+          }
+
+          // 檢查 icon 是否可用（先嘗試 CDN）
+          async function checkIconExists(symbol, stockInfo) {
+            const urls = getIconUrl(symbol, stockInfo);
+
+            // 1. 先試 TradingView CDN（最快）
             try {
-              const svgResponse = await fetch(`../icons/${symbolLower}.svg`);
+              const cdnResponse = await fetch(urls.cdn, { method: 'HEAD' });
+              if (cdnResponse.ok) {
+                return { exists: true, url: urls.cdn, source: 'cdn', isPlaceholder: false };
+              }
+            } catch (e) {}
+
+            // 2. 再試本地 SVG
+            try {
+              const svgResponse = await fetch(urls.localSvg);
               if (svgResponse.ok) {
                 const svgText = await svgResponse.text();
                 const size = svgText.length;
 
-                // 檢測佔位符特徵：包含 #1a1a1a 背景色且有 <text> 元素
+                // 檢測佔位符特徵
                 const isPlaceholder = (
                   size < 350 &&
                   svgText.includes('#1a1a1a') &&
@@ -95,15 +116,15 @@
                   svgText.includes(symbol.toUpperCase())
                 );
 
-                return { exists: true, format: 'svg', isPlaceholder };
+                return { exists: true, url: urls.localSvg, source: 'local', isPlaceholder };
               }
             } catch (e) {}
 
-            // 再試 PNG
+            // 3. 最後試本地 PNG
             try {
-              const pngResponse = await fetch(`../icons/${symbolLower}.png`, { method: 'HEAD' });
+              const pngResponse = await fetch(urls.localPng, { method: 'HEAD' });
               if (pngResponse.ok) {
-                return { exists: true, format: 'png', isPlaceholder: false };
+                return { exists: true, url: urls.localPng, source: 'local', isPlaceholder: false };
               }
             } catch (e) {}
 
@@ -115,7 +136,8 @@
             Object.keys(stockDatabase).sort().map(async (s) => ({
               symbol: s,
               name: stockDatabase[s].name,
-              iconStatus: await checkIconExists(s)
+              stockInfo: stockDatabase[s],
+              iconStatus: await checkIconExists(s, stockDatabase[s])
             }))
           );
 
@@ -133,8 +155,8 @@
                 <h3>✅ 可用股票（${withIcons.length}）</h3>
                 <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;">
                   ${withIcons.map(s =>
-                    `<a href="?symbol=${s.symbol}" title="${s.name}" style="background: #2a2e39; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #fff; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#3a3e49'" onmouseout="this.style.background='#2a2e39'">
-                      <img src="../icons/${s.symbol.toLowerCase()}.${s.iconStatus.format}" width="20" height="20" style="border-radius: 3px;" onerror="this.style.display='none'">
+                    `<a href="?symbol=${s.symbol}" title="${s.name} (${s.iconStatus.source === 'cdn' ? 'CDN' : '本地'})" style="background: #2a2e39; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #fff; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#3a3e49'" onmouseout="this.style.background='#2a2e39'">
+                      <img src="${s.iconStatus.url}" width="20" height="20" style="border-radius: 3px;" onerror="this.style.display='none'">
                       ${s.symbol}
                     </a>`
                   ).join('')}
@@ -173,13 +195,22 @@
         // 有股票代碼，生成圖表容器
         document.title = `${SYMBOL} Stock Technical Analysis`;
 
-        // 設置 favicon
+        // 設置 favicon - 優先使用 TradingView CDN
         const favicon = document.getElementById('favicon');
-        favicon.href = `../icons/${SYMBOL_LOWER}.svg`;
+        const logoName = STOCK_INFO.logoName || STOCK_INFO.domain.split('.')[0];
 
-        // Fallback to PNG if SVG fails
+        // 1. 嘗試 TradingView CDN
+        favicon.href = `https://s3-symbol-logo.tradingview.com/${logoName}.svg`;
+
+        // 2. 失敗則嘗試本地 SVG
         const img = new Image();
-        img.onerror = () => { favicon.href = `../icons/${SYMBOL_LOWER}.png`; };
+        img.onerror = () => {
+          favicon.href = `../icons/${SYMBOL_LOWER}.svg`;
+          // 3. 本地 SVG 失敗則嘗試本地 PNG
+          const img2 = new Image();
+          img2.onerror = () => { favicon.href = `../icons/${SYMBOL_LOWER}.png`; };
+          img2.src = favicon.href;
+        };
         img.src = favicon.href;
 
         // 生成圖表容器 HTML
