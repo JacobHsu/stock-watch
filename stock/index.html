@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="page-title">Stock Technical Analysis</title>
+    <link rel="icon" type="image/png" id="favicon" href="../icons/default.png">
+    <link rel="stylesheet" href="../styles.css" />
+
+    <script>
+      // ========== 股票資料庫 ==========
+      const stockDatabase = {
+        'AAPL': { exchange: 'NASDAQ', domain: 'apple.com', name: 'Apple Inc.' },
+        'GOOG': { exchange: 'NASDAQ', domain: 'google.com', name: 'Alphabet Inc.' },
+        'META': { exchange: 'NASDAQ', domain: 'meta.com', name: 'Meta Platforms Inc.' },
+        'NVDA': { exchange: 'NASDAQ', domain: 'nvidia.com', name: 'NVIDIA Corporation' },
+        'TSLA': { exchange: 'NASDAQ', domain: 'tesla.com', name: 'Tesla Inc.' },
+        'MSFT': { exchange: 'NASDAQ', domain: 'microsoft.com', name: 'Microsoft Corporation' },
+        'NFLX': { exchange: 'NASDAQ', domain: 'netflix.com', name: 'Netflix Inc.' },
+        'AVGO': { exchange: 'NASDAQ', domain: 'broadcom.com', name: 'Broadcom Inc.' },
+        'MU': { exchange: 'NASDAQ', domain: 'micron.com', name: 'Micron Technology Inc.' },
+        'HON': { exchange: 'NASDAQ', domain: 'honeywell.com', name: 'Honeywell International Inc.' },
+        'PAYX': { exchange: 'NASDAQ', domain: 'paychex.com', name: 'Paychex Inc.' },
+        'WBD': { exchange: 'NASDAQ', domain: 'wbd.com', name: 'Warner Bros. Discovery Inc.' },
+        'CEG': { exchange: 'NASDAQ', domain: 'constellationenergy.com', name: 'Constellation Energy Corporation' },
+        'ORCL': { exchange: 'NYSE', domain: 'oracle.com', name: 'Oracle Corporation' },
+        'TSM': { exchange: 'NYSE', domain: 'tsmc.com', name: 'Taiwan Semiconductor Manufacturing' },
+      };
+
+      // ========== 核心函數 ==========
+      function getSymbolFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('symbol')?.toUpperCase() || null;
+      }
+
+      function getStockInfo(symbol) {
+        return stockDatabase[symbol] || {
+          exchange: 'NASDAQ',
+          domain: `${symbol.toLowerCase()}.com`,
+          name: `${symbol} Corporation`
+        };
+      }
+
+      // ========== 在 HTML 載入前先取得股票代碼並生成 HTML ==========
+      const SYMBOL = getSymbolFromUrl();
+      const SYMBOL_LOWER = SYMBOL ? SYMBOL.toLowerCase() : '';
+      const STOCK_INFO = SYMBOL ? getStockInfo(SYMBOL) : null;
+
+      console.log('🎯 動態載入股票:', SYMBOL, STOCK_INFO);
+
+      // 載入超時檢查
+      let tvTimeout = setTimeout(() => {
+        if (typeof TradingView === "undefined") {
+          document.querySelectorAll('[id^="tradingview_"]').forEach((el) => {
+            el.innerHTML = '<div class="fallback-content"><p>圖表暫時無法載入</p><button onclick="location.reload()">重新載入</button></div>';
+          });
+        }
+      }, 10000);
+
+      window.addEventListener("load", () => clearTimeout(tvTimeout));
+    </script>
+
+    <!-- TradingView 腳本 -->
+    <script
+      defer
+      src="https://s3.tradingview.com/tv.js"
+      onerror="document.querySelectorAll('[id^=tradingview_]').forEach(el => el.innerHTML='<div class=fallback-content><p>圖表載入失敗</p><button onclick=location.reload()>重新載入</button></div>')"
+    ></script>
+    <script defer src="../chart-config.js"></script>
+  </head>
+  <body>
+    <script>
+      // ========== 生成頁面內容 ==========
+      if (!SYMBOL) {
+        // 沒有股票代碼，顯示選擇頁面
+        document.write(`
+          <div style="padding: 40px; text-align: center; color: #fff; font-family: Arial;">
+            <h1>⚠️ 缺少股票代碼</h1>
+            <p>請在 URL 中指定股票代碼，例如：</p>
+            <code style="background: #2a2e39; padding: 10px; display: inline-block; border-radius: 5px;">
+              ?symbol=TSM
+            </code>
+            <h3 style="margin-top: 30px;">可用的股票：</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px;">
+              ${Object.keys(stockDatabase).sort().map(s =>
+                `<a href="?symbol=${s}" style="background: #2a2e39; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #fff;">${s}</a>`
+              ).join('')}
+            </div>
+          </div>
+        `);
+      } else {
+        // 有股票代碼，生成圖表容器
+        document.title = `${SYMBOL} Stock Technical Analysis`;
+
+        // 設置 favicon
+        const favicon = document.getElementById('favicon');
+        favicon.href = `../icons/${SYMBOL_LOWER}.svg`;
+
+        // Fallback to PNG if SVG fails
+        const img = new Image();
+        img.onerror = () => { favicon.href = `../icons/${SYMBOL_LOWER}.png`; };
+        img.src = favicon.href;
+
+        // 生成圖表容器 HTML
+        document.write(`
+          <div class="charts-grid-3x4" data-symbol="${STOCK_INFO.exchange}:${SYMBOL}" data-prefix="${SYMBOL_LOWER}">
+            <!-- 第一行 - 1小時 -->
+            <div id="tradingview_${SYMBOL_LOWER}_1h_col1"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1h_col2"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1h_col3"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1h_col4"><div class="loading-placeholder"></div></div>
+
+            <!-- 第二行 - 4小時 -->
+            <div id="tradingview_${SYMBOL_LOWER}_4h_col1"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_4h_col2"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_4h_col3"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_4h_col4"><div class="loading-placeholder"></div></div>
+
+            <!-- 第三行 - 1天 -->
+            <div id="tradingview_${SYMBOL_LOWER}_1d_col1"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1d_col2"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1d_col3"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1d_col4"><div class="loading-placeholder"></div></div>
+          </div>
+        `);
+
+        console.log(`✅ 已生成圖表容器: ${STOCK_INFO.exchange}:${SYMBOL}`);
+      }
+    </script>
+  </body>
+</html>
