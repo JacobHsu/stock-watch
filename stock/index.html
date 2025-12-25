@@ -22,7 +22,6 @@
       function getStockInfo(symbol) {
         return stockDatabase[symbol] || {
           exchange: 'NASDAQ',
-          domain: `${symbol.toLowerCase()}.com`,
           name: `${symbol} Corporation`
         };
       }
@@ -77,58 +76,41 @@
         // 異步檢查 icons 並更新頁面
         (async function() {
           // 獲取 icon URL（優先 CDN，備援本地）
-          function getIconUrl(symbol, stockInfo) {
+          function getIconUrl(symbol) {
             const symbolLower = symbol.toLowerCase();
-            const logoName = stockInfo.logoName || stockInfo.domain.split('.')[0];
+            const symbolUpper = symbol.toUpperCase();
 
             // 返回多重備援 URL
             return {
-              cdn: `https://s3-symbol-logo.tradingview.com/${logoName}.svg`,
+              stocktwits: `https://logos.stocktwits-cdn.com/${symbolUpper}.png`,
+              etoro: `https://etoro-cdn.etorostatic.com/market-avatars/${symbolLower}/150x150.png`,
               localSvg: `../icons/${symbolLower}.svg`,
               localPng: `../icons/${symbolLower}.png`
             };
           }
 
-          // 檢查 icon 是否可用（先嘗試 CDN）
-          async function checkIconExists(symbol, stockInfo) {
-            const urls = getIconUrl(symbol, stockInfo);
+          // 檢查 icon 是否可用（信任 StockTwits CDN，只檢查本地佔位符）
+          async function checkIconExists(symbol) {
+            const urls = getIconUrl(symbol);
 
-            // 1. 先試 TradingView CDN（最快）
-            try {
-              const cdnResponse = await fetch(urls.cdn, { method: 'HEAD' });
-              if (cdnResponse.ok) {
-                return { exists: true, url: urls.cdn, source: 'cdn', isPlaceholder: false };
-              }
-            } catch (e) {}
-
-            // 2. 再試本地 SVG
+            // 1. 直接信任 StockTwits CDN（不檢查，讓瀏覽器自然 fallback）
+            // 檢查本地是否有佔位符（用於顯示狀態）
+            let isPlaceholder = false;
             try {
               const svgResponse = await fetch(urls.localSvg);
               if (svgResponse.ok) {
                 const svgText = await svgResponse.text();
                 const size = svgText.length;
-
-                // 檢測佔位符特徵
-                const isPlaceholder = (
+                isPlaceholder = (
                   size < 350 &&
                   svgText.includes('#1a1a1a') &&
                   svgText.includes('<text') &&
                   svgText.includes(symbol.toUpperCase())
                 );
-
-                return { exists: true, url: urls.localSvg, source: 'local', isPlaceholder };
               }
             } catch (e) {}
 
-            // 3. 最後試本地 PNG
-            try {
-              const pngResponse = await fetch(urls.localPng, { method: 'HEAD' });
-              if (pngResponse.ok) {
-                return { exists: true, url: urls.localPng, source: 'local', isPlaceholder: false };
-              }
-            } catch (e) {}
-
-            return { exists: false };
+            return { exists: true, url: urls.stocktwits, source: 'cdn', isPlaceholder };
           }
 
           // 檢查所有股票
@@ -136,8 +118,7 @@
             Object.keys(stockDatabase).sort().map(async (s) => ({
               symbol: s,
               name: stockDatabase[s].name,
-              stockInfo: stockDatabase[s],
-              iconStatus: await checkIconExists(s, stockDatabase[s])
+              iconStatus: await checkIconExists(s)
             }))
           );
 
@@ -156,7 +137,7 @@
                 <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;">
                   ${withIcons.map(s =>
                     `<a href="?symbol=${s.symbol}" title="${s.name} (${s.iconStatus.source === 'cdn' ? 'CDN' : '本地'})" style="background: #2a2e39; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #fff; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#3a3e49'" onmouseout="this.style.background='#2a2e39'">
-                      <img src="${s.iconStatus.url}" width="20" height="20" style="border-radius: 3px;" onerror="this.style.display='none'">
+                      <img src="${s.iconStatus.url}" width="20" height="20" style="border-radius: 3px;" onerror="if(this.src.includes('stocktwits')){this.src='https://etoro-cdn.etorostatic.com/market-avatars/${s.symbol.toLowerCase()}/150x150.png'}else if(this.src.includes('etoro')){this.src='../icons/${s.symbol.toLowerCase()}.svg'}else if(this.src.includes('.svg')){this.src='../icons/${s.symbol.toLowerCase()}.png'}else{this.style.display='none'}">
                       ${s.symbol}
                     </a>`
                   ).join('')}
@@ -195,20 +176,25 @@
         // 有股票代碼，生成圖表容器
         document.title = `${SYMBOL} Stock Technical Analysis`;
 
-        // 設置 favicon - 優先使用 TradingView CDN
+        // 設置 favicon - 優先使用 StockTwits CDN
         const favicon = document.getElementById('favicon');
-        const logoName = STOCK_INFO.logoName || STOCK_INFO.domain.split('.')[0];
 
-        // 1. 嘗試 TradingView CDN
-        favicon.href = `https://s3-symbol-logo.tradingview.com/${logoName}.svg`;
+        // 1. 嘗試 StockTwits CDN
+        favicon.href = `https://logos.stocktwits-cdn.com/${SYMBOL}.png`;
 
-        // 2. 失敗則嘗試本地 SVG
+        // 2. 失敗則嘗試 eToro CDN
         const img = new Image();
         img.onerror = () => {
-          favicon.href = `../icons/${SYMBOL_LOWER}.svg`;
-          // 3. 本地 SVG 失敗則嘗試本地 PNG
+          favicon.href = `https://etoro-cdn.etorostatic.com/market-avatars/${SYMBOL_LOWER}/150x150.png`;
+          // 3. 失敗則嘗試本地 SVG
           const img2 = new Image();
-          img2.onerror = () => { favicon.href = `../icons/${SYMBOL_LOWER}.png`; };
+          img2.onerror = () => {
+            favicon.href = `../icons/${SYMBOL_LOWER}.svg`;
+            // 4. 本地 SVG 失敗則嘗試本地 PNG
+            const img3 = new Image();
+            img3.onerror = () => { favicon.href = `../icons/${SYMBOL_LOWER}.png`; };
+            img3.src = favicon.href;
+          };
           img2.src = favicon.href;
         };
         img.src = favicon.href;
