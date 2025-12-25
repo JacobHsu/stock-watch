@@ -1,56 +1,12 @@
 // 股票資料庫 - 統一管理所有股票資訊
 // 可同時用於 Node.js (generate-stock.js) 和瀏覽器 (stock/index.html)
+//
+// 策略：只記錄非 NASDAQ 交易所的股票（主要是 NYSE）
+// NASDAQ 股票會自動使用預設值，不需要在此列出
 
 const stockDatabase = {
-  // ========== 科技股 - NASDAQ ==========
-  'AAPL': { exchange: 'NASDAQ', name: 'Apple Inc.' },
-  'GOOG': { exchange: 'NASDAQ', name: 'Alphabet Inc.' },
-  'GOOGL': { exchange: 'NASDAQ', name: 'Alphabet Inc.' },
-  'META': { exchange: 'NASDAQ', name: 'Meta Platforms Inc.' },
-  'NVDA': { exchange: 'NASDAQ', name: 'NVIDIA Corporation' },
-  'TSLA': { exchange: 'NASDAQ', name: 'Tesla Inc.' },
-  'MSFT': { exchange: 'NASDAQ', name: 'Microsoft Corporation' },
-  'AMZN': { exchange: 'NASDAQ', name: 'Amazon.com Inc.' },
-  'NFLX': { exchange: 'NASDAQ', name: 'Netflix Inc.' },
-  'ADBE': { exchange: 'NASDAQ', name: 'Adobe Inc.' },
-  'INTC': { exchange: 'NASDAQ', name: 'Intel Corporation' },
-  'AMD': { exchange: 'NASDAQ', name: 'Advanced Micro Devices' },
-  'QCOM': { exchange: 'NASDAQ', name: 'QUALCOMM Incorporated' },
-  'AVGO': { exchange: 'NASDAQ', name: 'Broadcom Inc.' },
-  'CSCO': { exchange: 'NASDAQ', name: 'Cisco Systems Inc.' },
-  'PYPL': { exchange: 'NASDAQ', name: 'PayPal Holdings Inc.' },
-  'SHOP': { exchange: 'NASDAQ', name: 'Shopify Inc.' },
-  'ABNB': { exchange: 'NASDAQ', name: 'Airbnb Inc.' },
-  'ZOOM': { exchange: 'NASDAQ', name: 'Zoom Video Communications' },
-  'ZM': { exchange: 'NASDAQ', name: 'Zoom Video Communications' },
-  'DOCU': { exchange: 'NASDAQ', name: 'DocuSign Inc.' },
-  'ROKU': { exchange: 'NASDAQ', name: 'Roku Inc.' },
-  'CRWD': { exchange: 'NASDAQ', name: 'CrowdStrike Holdings Inc.' },
-  'OKTA': { exchange: 'NASDAQ', name: 'Okta Inc.' },
-  'DDOG': { exchange: 'NASDAQ', name: 'Datadog Inc.' },
-  'MDB': { exchange: 'NASDAQ', name: 'MongoDB Inc.' },
-  'TEAM': { exchange: 'NASDAQ', name: 'Atlassian Corporation' },
-  'WDAY': { exchange: 'NASDAQ', name: 'Workday Inc.' },
-  'SPLK': { exchange: 'NASDAQ', name: 'Splunk Inc.' },
-  'PANW': { exchange: 'NASDAQ', name: 'Palo Alto Networks Inc.' },
-  'FTNT': { exchange: 'NASDAQ', name: 'Fortinet Inc.' },
-  'TXN': { exchange: 'NASDAQ', name: 'Texas Instruments Incorporated' },
-  'LYFT': { exchange: 'NASDAQ', name: 'Lyft Inc.' },
-  'COST': { exchange: 'NASDAQ', name: 'Costco Wholesale Corporation' },
-  'MRNA': { exchange: 'NASDAQ', name: 'Moderna Inc.' },
-  'LI': { exchange: 'NASDAQ', name: 'Li Auto Inc.' },
-  'RIVN': { exchange: 'NASDAQ', name: 'Rivian Automotive Inc.' },
-  'LCID': { exchange: 'NASDAQ', name: 'Lucid Group Inc.' },
-  'CMCSA': { exchange: 'NASDAQ', name: 'Comcast Corporation' },
-  'HON': { exchange: 'NASDAQ', name: 'Honeywell International Inc.' },
-  'SBUX': { exchange: 'NASDAQ', name: 'Starbucks Corporation' },
-  'MU': { exchange: 'NASDAQ', name: 'Micron Technology Inc.' },
-  'PAYX': { exchange: 'NASDAQ', name: 'Paychex Inc.' },
-  'WBD': { exchange: 'NASDAQ', name: 'Warner Bros. Discovery Inc.' },
-  'CEG': { exchange: 'NASDAQ', name: 'Constellation Energy Corporation' },
-  'FAST': { exchange: 'NASDAQ', name: 'Fastenal Company' },
-
-  // ========== 傳統科技與企業 - NYSE ==========
+  // ========== NYSE 股票 ==========
+  // 科技與企業
   'ORCL': { exchange: 'NYSE', name: 'Oracle Corporation' },
   'IBM': { exchange: 'NYSE', name: 'International Business Machines' },
   'CRM': { exchange: 'NYSE', name: 'Salesforce Inc.' },
