@@ -223,6 +223,17 @@
         `);
 
         console.log(`✅ 已生成圖表容器: ${STOCK_INFO.exchange}:${SYMBOL}`);
+
+        // ========== 鍵盤快捷鍵 ==========
+        document.addEventListener('keydown', (e) => {
+          // Shift + M: 開啟 MoneyDJ 股票介紹頁面
+          if (e.shiftKey && e.key.toUpperCase() === 'M') {
+            e.preventDefault();
+            const moneydjUrl = `https://www.moneydj.com/us/basic/basic0001/${SYMBOL}`;
+            window.open(moneydjUrl, '_blank');
+            console.log(`🔗 開啟 MoneyDJ: ${moneydjUrl}`);
+          }
+        });
       }
     </script>
   </body>
