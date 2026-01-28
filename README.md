@@ -4,7 +4,7 @@
 
 ## 🚀 新功能亮點
 
-- **動態頁面**：無需生成 HTML，直接使用 `stock/?symbol=TSM` 訪問任何股票
+- **動態頁面**：無需生成 HTML，直接使用 `stock/?s=TSM` 訪問任何股票
 - **智能 Icon 管理**：自動檢測 Icon 狀態，顯示可用股票列表
 - **集中式資料庫**：`stock-database.js` 統一管理所有股票資訊
 - **靈活生成策略**：預設只下載 Icon，需要時才生成靜態 HTML
@@ -50,9 +50,9 @@
 #### 方式 1：動態頁面（推薦）⭐
 ```
 # 訪問任何股票，不需要預先生成 HTML
-https://jacobhsu.github.io/stock-watch/stock/?symbol=TSM
-https://jacobhsu.github.io/stock-watch/stock/?symbol=AAPL
-https://jacobhsu.github.io/stock-watch/stock/?symbol=NVDA
+https://jacobhsu.github.io/stock-watch/stock/?s=TSM
+https://jacobhsu.github.io/stock-watch/stock/?s=AAPL
+https://jacobhsu.github.io/stock-watch/stock/?s=NVDA
 ```
 
 #### 方式 2：瀏覽股票列表
@@ -74,7 +74,7 @@ https://jacobhsu.github.io/stock-watch/stock/tsm.html
 node generate-stock.js SBUX
 
 # 2. 訪問動態版（不用 commit HTML）
-# stock/?symbol=SBUX
+# stock/?s=SBUX
 
 # 3. 如果需要靜態 HTML
 node generate-stock.js SBUX --html
@@ -190,7 +190,7 @@ stock-watch/
 node generate-stock.js SBUX
 
 # 3. 完成！訪問動態版
-# stock/?symbol=SBUX
+# stock/?s=SBUX
 ```
 
 **特殊案例**：有些股票的 Logo 名稱需要手動指定
@@ -234,11 +234,11 @@ node generate-stock.js ORCL NYSE
 ```bash
 # 大多數情況（推薦）
 node generate-stock.js SBUX        # 只下載 Icon
-# → 訪問 stock/?symbol=SBUX
+# → 訪問 stock/?s=SBUX
 
 # 需要靜態頁面時
 node generate-stock.js TSM --html  # Icon + HTML
-# → 訪問 stock/tsm.html 或 stock/?symbol=TSM
+# → 訪問 stock/tsm.html 或 stock/?s=TSM
 ```
 
 **功能特點：**
@@ -339,7 +339,7 @@ node generate-stock.js TSM --html  # Icon + HTML
    - 可選生成靜態 HTML
 
 3. **stock/index.html** - 動態股票頁面
-   - 讀取 URL 參數 `?symbol=XXX`
+   - 讀取 URL 參數 `?s=XXX`
    - 從 `stock-database.js` 獲取股票資訊
    - 動態生成圖表容器
    - 無參數時顯示股票列表（按 Icon 狀態分類）
@@ -352,7 +352,7 @@ node generate-stock.js TSM --html  # Icon + HTML
 
 | 模式 | URL 格式 | 優點 | 缺點 |
 |------|----------|------|------|
-| **動態** | `stock/?symbol=TSM` | 不用生成 HTML，即時添加股票 | URL 較長，SEO 較差 |
+| **動態** | `stock/?s=TSM` | 不用生成 HTML，即時添加股票 | URL 較長，SEO 較差 |
 | **靜態** | `stock/tsm.html` | URL 簡潔，SEO 友好 | 需要預先生成 HTML |
 
 **推薦策略**：

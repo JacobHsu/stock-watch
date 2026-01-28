@@ -16,7 +16,8 @@
       // ========== 核心函數 ==========
       function getSymbolFromUrl() {
         const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('symbol')?.toUpperCase() || null;
+        // 使用 's' 參數，避免 TradingView 自動讀取 'symbol' 參數覆蓋交易所設定
+        return urlParams.get('s')?.toUpperCase() || null;
       }
 
       function getStockInfo(symbol) {
@@ -129,14 +130,14 @@
           // 更新頁面
           document.getElementById('stock-selector').innerHTML = `
             <h1>📈 Stock Watch</h1>
-            <p>請選擇股票代碼或使用 URL：<code style="background: #2a2e39; padding: 5px 10px; border-radius: 3px;">?symbol=TSM</code></p>
+            <p>請選擇股票代碼或使用 URL：<code style="background: #2a2e39; padding: 5px 10px; border-radius: 3px;">?s=TSM</code></p>
 
             ${withIcons.length > 0 ? `
               <div style="margin-top: 30px;">
                 <h3>✅ 可用股票（${withIcons.length}）</h3>
                 <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;">
                   ${withIcons.map(s =>
-                    `<a href="?symbol=${s.symbol}" title="${s.name} (${s.iconStatus.source === 'cdn' ? 'CDN' : '本地'})" style="background: #2a2e39; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #fff; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#3a3e49'" onmouseout="this.style.background='#2a2e39'">
+                    `<a href="?s=${s.symbol}" title="${s.name} (${s.iconStatus.source === 'cdn' ? 'CDN' : '本地'})" style="background: #2a2e39; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #fff; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#3a3e49'" onmouseout="this.style.background='#2a2e39'">
                       <img src="${s.iconStatus.url}" width="20" height="20" style="border-radius: 3px;" onerror="if(this.src.includes('stocktwits')){this.src='https://etoro-cdn.etorostatic.com/market-avatars/${s.symbol.toLowerCase()}/150x150.png'}else if(this.src.includes('etoro')){this.src='../icons/${s.symbol.toLowerCase()}.svg'}else if(this.src.includes('.svg')){this.src='../icons/${s.symbol.toLowerCase()}.png'}else{this.style.display='none'}">
                       ${s.symbol}
                     </a>`
@@ -151,7 +152,7 @@
                 <p style="font-size: 14px; color: #888;">這些股票的 Icon 下載失敗，使用預設佔位符</p>
                 <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;">
                   ${withPlaceholders.map(s =>
-                    `<a href="?symbol=${s.symbol}" title="${s.name}" style="background: #3a3e49; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #aaa;">${s.symbol}</a>`
+                    `<a href="?s=${s.symbol}" title="${s.name}" style="background: #3a3e49; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #aaa;">${s.symbol}</a>`
                   ).join('')}
                 </div>
                 <p style="font-size: 12px; color: #666; margin-top: 10px; font-family: monospace;">node generate-stock.js ${withPlaceholders.map(s => s.symbol).join(',')}</p>

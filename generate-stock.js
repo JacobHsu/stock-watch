@@ -284,7 +284,7 @@ async function generateStock(symbol, exchange = null, options = {}) {
     console.log(`✅ 已生成 HTML: stock/${symbolLower}.html`);
     console.log(`🔗 靜態 URL: stock/${symbolLower}.html`);
   } else {
-    console.log(`ℹ️  僅下載 icon（使用動態版: stock/?symbol=${symbolUpper}）`);
+    console.log(`ℹ️  僅下載 icon（使用動態版: stock/?s=${symbolUpper}）`);
   }
 
   return symbolLower;
@@ -316,7 +316,7 @@ async function generateMultipleStocks(stocks, options = {}) {
   if (generateHtml) {
     console.log(`📄 靜態 HTML: stock/[symbol].html`);
   }
-  console.log(`🌐 動態版: stock/?symbol=[SYMBOL]`);
+  console.log(`🌐 動態版: stock/?s=[SYMBOL]`);
 }
 
 // 命令行使用
@@ -345,7 +345,7 @@ if (require.main === module) {
   # 新增股票（只要 icon，用動態版）
   node generate-stock.js SBUX
   → 下載 icons/sbux.svg
-  → 訪問 stock/?symbol=SBUX
+  → 訪問 stock/?s=SBUX
 
   # 新增股票（需要靜態 HTML）
   node generate-stock.js SBUX --html
@@ -355,7 +355,7 @@ if (require.main === module) {
   # 批量新增股票（只要 icon）
   node generate-stock.js SBUX,DIS,NFLX
   → 下載所有 icons
-  → 訪問 stock/?symbol=SBUX 等
+  → 訪問 stock/?s=SBUX 等
 
   # 批量新增股票（包含 HTML）
   node generate-stock.js SBUX,DIS,NFLX --html
@@ -366,7 +366,7 @@ if (require.main === module) {
   node generate-stock.js "ORCL:NASDAQ,TSM:NYSE" --html
 
 💡 提示:
-  - 現在有動態版（stock/?symbol=XXX），大多數情況只需要 icon
+  - 現在有動態版（stock/?s=XXX），大多數情況只需要 icon
   - 只有需要靜態頁面時才加 --html 參數
     `);
     process.exit(1);

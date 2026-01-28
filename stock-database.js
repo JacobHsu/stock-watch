@@ -36,6 +36,7 @@ const stockDatabase = {
   'XPEV': { exchange: 'NYSE', name: 'XPeng Inc.' },
 
   // ========== 傳統產業 - NYSE ==========
+  'BA': { exchange: 'NYSE', name: 'The Boeing Company' },
   'WMT': { exchange: 'NYSE', name: 'Walmart Inc.' },
   'TGT': { exchange: 'NYSE', name: 'Target Corporation' },
   'PFE': { exchange: 'NYSE', name: 'Pfizer Inc.' },
