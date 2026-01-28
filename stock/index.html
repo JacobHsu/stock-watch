@@ -74,101 +74,145 @@
           </div>
         `);
 
-        // 異步檢查 icons 並更新頁面
-        (async function() {
-          // 獲取 icon URL（優先 CDN，備援本地）
+        // 生成股票列表頁面
+        (function() {
+          // 獲取 icon URL
           function getIconUrl(symbol) {
+            return `https://logos.stocktwits-cdn.com/${symbol.toUpperCase()}.png`;
+          }
+
+          // 生成股票連結 HTML（帶多重 fallback）
+          function createStockLink(symbol, name) {
+            const iconUrl = getIconUrl(symbol);
             const symbolLower = symbol.toLowerCase();
-            const symbolUpper = symbol.toUpperCase();
-
-            // 返回多重備援 URL
-            return {
-              stocktwits: `https://logos.stocktwits-cdn.com/${symbolUpper}.png`,
-              etoro: `https://etoro-cdn.etorostatic.com/market-avatars/${symbolLower}/150x150.png`,
-              localSvg: `../icons/${symbolLower}.svg`,
-              localPng: `../icons/${symbolLower}.png`
-            };
+            // fallback: StockTwits -> eToro -> 本地 svg -> 本地 png -> 隱藏
+            const fallback = `onerror="if(this.src.includes('stocktwits')){this.src='https://etoro-cdn.etorostatic.com/market-avatars/${symbolLower}/150x150.png'}else if(this.src.includes('etoro')){this.src='../icons/${symbolLower}.svg'}else if(this.src.includes('.svg')){this.src='../icons/${symbolLower}.png'}else{this.style.display='none'}"`;
+            return `<a href="?s=${symbol}" title="${name}" class="stock-link">
+              <img src="${iconUrl}" width="18" height="18" ${fallback}>
+              <span>${symbol}</span>
+            </a>`;
           }
 
-          // 檢查 icon 是否可用（信任 StockTwits CDN，只檢查本地佔位符）
-          async function checkIconExists(symbol) {
-            const urls = getIconUrl(symbol);
+          // 生成類別區塊 HTML
+          function createCategory(title, stocks) {
+            if (!stocks || stocks.length === 0) return '';
+            return `
+              <div class="category">
+                <h4>${title}</h4>
+                <div class="stock-grid">
+                  ${stocks.map(s => createStockLink(s.symbol, s.name)).join('')}
+                </div>
+              </div>
+            `;
+          }
 
-            // 1. 直接信任 StockTwits CDN（不檢查，讓瀏覽器自然 fallback）
-            // 檢查本地是否有佔位符（用於顯示狀態）
-            let isPlaceholder = false;
-            try {
-              const svgResponse = await fetch(urls.localSvg);
-              if (svgResponse.ok) {
-                const svgText = await svgResponse.text();
-                const size = svgText.length;
-                isPlaceholder = (
-                  size < 350 &&
-                  svgText.includes('#1a1a1a') &&
-                  svgText.includes('<text') &&
-                  svgText.includes(symbol.toUpperCase())
-                );
+          // 按交易所和類別分組股票
+          const nyseStocks = {};
+          const nasdaqStocks = {};
+          const amexStocks = [];
+
+          // 類別定義
+          const categories = {
+            '金融': ['BRK.B','JPM','V','MA','BAC','WFC','GS','MS','C','SCHW','BLK','AXP','COF','PNC','USB','TFC','BK','BX','KKR','ICE','SPGI','MCO','MMC','AON','AJG','CB','PGR','ALL','AFL','TRV'],
+            '科技': ['ORCL','IBM','CRM','NOW','ACN','UBER','SNOW','PLTR','RBLX','NET','ANET','APH','TEL','GLW','MSI'],
+            '醫療': ['LLY','ABBV','TMO','DHR','ABT','BSX','PFE','BMY','ZTS','JNJ','MRK','SYK','MDT','BDX','CI','ELV','UNH','HCA','CVS','MCK','COR'],
+            '零售消費': ['HD','TJX','AZO','LOW','KR','TGT','DG','MCD','DIS','RCL','HLT','CMG','LYV','YUM','CCL','LVS','NKE','TKO'],
+            '工業': ['CAT','DE','MMM','ITW','JCI','GEV','GE','PH','CMI','ETN','TT','AME','ROK','XYL','WAB','CARR','EMR','ECL','SHW','APD','CRH'],
+            '航太國防': ['BA','RTX','LMT','NOC','GD','LHX','TDG','HWM'],
+            '能源': ['XOM','CVX','COP','EOG','PSX','MPC','WMB','KMI','FCX','NEM'],
+            '公用事業': ['NEE','DUK','SO','SRE','VST'],
+            '不動產': ['PLD','AMT','WELL','SPG','DLR','O'],
+            '交通運輸': ['UNP','NSC','UPS','FDX','URI','PWR'],
+            '消費品': ['PG','KO','PM','MO','CL','GM','F','WM'],
+            '電信': ['T','VZ'],
+            '國際': ['TSM','BABA','NIO','XPEV']
+          };
+
+          const nasdaqCategories = {
+            '科技巨頭': ['NVDA','MSFT','AAPL','AMZN','GOOGL','GOOG','META','TSLA','AVGO','NFLX'],
+            '半導體': ['AMD','INTC','QCOM','MU','AMAT','LRCX','KLAC','ADI','TXN','MRVL'],
+            '軟體服務': ['ADBE','INTU','PANW','CRWD','FTNT','ADSK','CDNS','SNPS','CSCO','ADP','FISV','PYPL'],
+            '電商網路': ['BKNG','ABNB','EBAY','EXPE','DASH','CPRT'],
+            '零售': ['WMT','COST','ORLY','ROST'],
+            '醫療': ['ISRG','AMGN','REGN','GILD','VRTX','IDXX','ALNY'],
+            '消費媒體': ['SBUX','MAR','CMCSA','CHTR','FOX','FOXA','WBD','EA'],
+            '工業': ['PCAR','CTAS','FAST','CSX','HON','LIN'],
+            '金融科技': ['COIN','HOOD','MSTR'],
+            '其他': ['TMUS','PEP','MDLZ','AEP','CEG','EQIX','APP','CME']
+          };
+
+          // 分類股票
+          Object.entries(stockDatabase).forEach(([symbol, info]) => {
+            const stock = { symbol, name: info.name, exchange: info.exchange };
+            if (info.exchange === 'NYSE') {
+              for (const [cat, symbols] of Object.entries(categories)) {
+                if (symbols.includes(symbol)) {
+                  if (!nyseStocks[cat]) nyseStocks[cat] = [];
+                  nyseStocks[cat].push(stock);
+                  break;
+                }
               }
-            } catch (e) {}
+            } else if (info.exchange === 'NASDAQ') {
+              for (const [cat, symbols] of Object.entries(nasdaqCategories)) {
+                if (symbols.includes(symbol)) {
+                  if (!nasdaqStocks[cat]) nasdaqStocks[cat] = [];
+                  nasdaqStocks[cat].push(stock);
+                  break;
+                }
+              }
+            } else if (info.exchange === 'AMEX') {
+              amexStocks.push(stock);
+            }
+          });
 
-            return { exists: true, url: urls.stocktwits, source: 'cdn', isPlaceholder };
-          }
-
-          // 檢查所有股票
-          const stocksWithStatus = await Promise.all(
-            Object.keys(stockDatabase).sort().map(async (s) => ({
-              symbol: s,
-              name: stockDatabase[s].name,
-              iconStatus: await checkIconExists(s)
-            }))
-          );
-
-          const withIcons = stocksWithStatus.filter(s => s.iconStatus.exists && !s.iconStatus.isPlaceholder);
-          const withPlaceholders = stocksWithStatus.filter(s => s.iconStatus.exists && s.iconStatus.isPlaceholder);
-          const withoutIcons = stocksWithStatus.filter(s => !s.iconStatus.exists);
+          const nyseCount = Object.values(nyseStocks).flat().length;
+          const nasdaqCount = Object.values(nasdaqStocks).flat().length;
 
           // 更新頁面
           document.getElementById('stock-selector').innerHTML = `
-            <h1>📈 Stock Watch</h1>
-            <p>請選擇股票代碼或使用 URL：<code style="background: #2a2e39; padding: 5px 10px; border-radius: 3px;">?s=TSM</code></p>
+            <style>
+              .stock-selector-container { padding: 20px 40px; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 1600px; margin: 0 auto; }
+              .stock-selector-container h1 { text-align: center; margin-bottom: 10px; }
+              .stock-selector-container > p { text-align: center; color: #888; margin-bottom: 30px; }
+              .stock-selector-container code { background: #2a2e39; padding: 4px 8px; border-radius: 4px; font-size: 14px; }
+              .exchange-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+              .exchange-column { background: #1a1a1a; border-radius: 12px; padding: 20px; }
+              .exchange-column h2 { margin: 0 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid #333; font-size: 18px; }
+              .exchange-column h2 .count { font-weight: normal; color: #666; font-size: 14px; }
+              .nyse-column h2 { color: #4a9eff; border-color: #4a9eff; }
+              .nasdaq-column h2 { color: #00c853; border-color: #00c853; }
+              .category { margin-bottom: 20px; }
+              .category h4 { margin: 0 0 10px 0; color: #888; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+              .stock-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+              .stock-link { display: inline-flex; align-items: center; gap: 6px; background: #2a2e39; padding: 6px 12px; border-radius: 6px; text-decoration: none; color: #fff; font-size: 13px; transition: all 0.15s; }
+              .stock-link:hover { background: #3a4a5a; transform: translateY(-1px); }
+              .stock-link img { border-radius: 3px; }
+              .etf-section { margin-top: 30px; text-align: center; }
+              .etf-section h3 { color: #ff9800; margin-bottom: 15px; font-size: 16px; }
+              .etf-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+              @media (max-width: 900px) { .exchange-columns { grid-template-columns: 1fr; } }
+            </style>
 
-            ${withIcons.length > 0 ? `
-              <div style="margin-top: 30px;">
-                <h3>✅ 可用股票（${withIcons.length}）</h3>
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;">
-                  ${withIcons.map(s =>
-                    `<a href="?s=${s.symbol}" title="${s.name} (${s.iconStatus.source === 'cdn' ? 'CDN' : '本地'})" style="background: #2a2e39; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #fff; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#3a3e49'" onmouseout="this.style.background='#2a2e39'">
-                      <img src="${s.iconStatus.url}" width="20" height="20" style="border-radius: 3px;" onerror="if(this.src.includes('stocktwits')){this.src='https://etoro-cdn.etorostatic.com/market-avatars/${s.symbol.toLowerCase()}/150x150.png'}else if(this.src.includes('etoro')){this.src='../icons/${s.symbol.toLowerCase()}.svg'}else if(this.src.includes('.svg')){this.src='../icons/${s.symbol.toLowerCase()}.png'}else{this.style.display='none'}">
-                      ${s.symbol}
-                    </a>`
-                  ).join('')}
-                </div>
+            <h1>Stock Watch</h1>
+            <p>選擇股票或使用 URL <code>?s=NVDA</code></p>
+
+            <div class="exchange-columns">
+              <div class="exchange-column nyse-column">
+                <h2>NYSE <span class="count">(${nyseCount})</span></h2>
+                ${Object.entries(nyseStocks).map(([cat, stocks]) => createCategory(cat, stocks)).join('')}
               </div>
-            ` : ''}
-
-            ${withPlaceholders.length > 0 ? `
-              <div style="margin-top: 30px; opacity: 0.7;">
-                <h3>⚠️ 使用佔位符 Icon（${withPlaceholders.length}）</h3>
-                <p style="font-size: 14px; color: #888;">這些股票的 Icon 下載失敗，使用預設佔位符</p>
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;">
-                  ${withPlaceholders.map(s =>
-                    `<a href="?s=${s.symbol}" title="${s.name}" style="background: #3a3e49; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #aaa;">${s.symbol}</a>`
-                  ).join('')}
-                </div>
-                <p style="font-size: 12px; color: #666; margin-top: 10px; font-family: monospace;">node generate-stock.js ${withPlaceholders.map(s => s.symbol).join(',')}</p>
+              <div class="exchange-column nasdaq-column">
+                <h2>NASDAQ <span class="count">(${nasdaqCount})</span></h2>
+                ${Object.entries(nasdaqStocks).map(([cat, stocks]) => createCategory(cat, stocks)).join('')}
               </div>
-            ` : ''}
+            </div>
 
-            ${withoutIcons.length > 0 ? `
-              <div style="margin-top: 30px; opacity: 0.5;">
-                <h3>❌ 缺少 Icon（${withoutIcons.length}）</h3>
-                <p style="font-size: 14px; color: #888;">需要先生成 Icon 才能使用</p>
-                <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px;">
-                  ${withoutIcons.map(s =>
-                    `<span title="${s.name}" style="background: #2a2e39; padding: 8px 15px; border-radius: 5px; color: #666; cursor: not-allowed;">${s.symbol}</span>`
-                  ).join('')}
+            ${amexStocks.length > 0 ? `
+              <div class="etf-section">
+                <h3>AMEX ETF (${amexStocks.length})</h3>
+                <div class="etf-grid">
+                  ${amexStocks.map(s => createStockLink(s.symbol, s.name)).join('')}
                 </div>
-                <p style="font-size: 12px; color: #666; margin-top: 10px; font-family: monospace;">node generate-stock.js ${withoutIcons.map(s => s.symbol).join(',')}</p>
               </div>
             ` : ''}
           `;
