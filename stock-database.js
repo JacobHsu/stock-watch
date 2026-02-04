@@ -45,7 +45,6 @@ const stockDatabase = {
   'ACN': { exchange: 'NYSE', name: 'Accenture plc' },
   'UBER': { exchange: 'NYSE', name: 'Uber Technologies Inc.' },
   'SNOW': { exchange: 'NYSE', name: 'Snowflake Inc.' },
-  'PLTR': { exchange: 'NYSE', name: 'Palantir Technologies Inc.' },
   'RBLX': { exchange: 'NYSE', name: 'Roblox Corporation' },
   'NET': { exchange: 'NYSE', name: 'Cloudflare Inc.' },
   'ANET': { exchange: 'NYSE', name: 'Arista Networks Inc.' },
@@ -212,6 +211,7 @@ const stockDatabase = {
   'MRVL': { exchange: 'NASDAQ', name: 'Marvell Technology Inc.' },
 
   // 軟體與服務
+  'PLTR': { exchange: 'NASDAQ', name: 'Palantir Technologies Inc.' },
   'ADBE': { exchange: 'NASDAQ', name: 'Adobe Inc.' },
   'INTU': { exchange: 'NASDAQ', name: 'Intuit Inc.' },
   'PANW': { exchange: 'NASDAQ', name: 'Palo Alto Networks Inc.' },
