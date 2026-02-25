@@ -72,7 +72,7 @@ https://jacobhsu.github.io/stock-watch/stock/tsm.html
 ```bash
 # 1. 只下載 Icon（預設）
 node generate-stock.js SBUX
-
+ㄕ
 # 2. 訪問動態版（不用 commit HTML）
 # stock/?s=SBUX
 
