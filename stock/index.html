@@ -109,7 +109,8 @@
           // 按交易所和類別分組股票
           const nyseStocks = {};
           const nasdaqStocks = {};
-          const amexStocks = [];
+          const amexCommodityStocks = [];
+          const amexEtfStocks = [];
 
           // 類別定義
           const categories = {
@@ -161,7 +162,11 @@
                 }
               }
             } else if (info.exchange === 'AMEX') {
-              amexStocks.push(stock);
+              if (info.category === 'commodity') {
+                amexCommodityStocks.push(stock);
+              } else {
+                amexEtfStocks.push(stock);
+              }
             }
           });
 
@@ -171,50 +176,57 @@
           // 更新頁面
           document.getElementById('stock-selector').innerHTML = `
             <style>
-              .stock-selector-container { padding: 20px 40px; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; max-width: 1600px; margin: 0 auto; }
-              .stock-selector-container h1 { text-align: center; margin-bottom: 10px; }
-              .stock-selector-container > p { text-align: center; color: #888; margin-bottom: 30px; }
-              .stock-selector-container code { background: #2a2e39; padding: 4px 8px; border-radius: 4px; font-size: 14px; }
-              .exchange-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+              html, body { height: auto; overflow: auto; }
+              .page-wrapper { padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; color: #fff; }
+              .page-title { text-align: center; margin-bottom: 20px; }
+              .page-title p { color: #888; font-size: 14px; }
+              .page-title code { background: #2a2e39; padding: 4px 8px; border-radius: 4px; }
+              .main-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+              .sub-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
               .exchange-column { background: #1a1a1a; border-radius: 12px; padding: 20px; }
               .exchange-column h2 { margin: 0 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid #333; font-size: 18px; }
               .exchange-column h2 .count { font-weight: normal; color: #666; font-size: 14px; }
               .nyse-column h2 { color: #4a9eff; border-color: #4a9eff; }
               .nasdaq-column h2 { color: #00c853; border-color: #00c853; }
+              .commodity-column h2 { color: #ffd700; border-color: #ffd700; }
+              .etf-column h2 { color: #ff9800; border-color: #ff9800; }
               .category { margin-bottom: 20px; }
               .category h4 { margin: 0 0 10px 0; color: #888; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
               .stock-grid { display: flex; flex-wrap: wrap; gap: 6px; }
               .stock-link { display: inline-flex; align-items: center; gap: 6px; background: #2a2e39; padding: 6px 12px; border-radius: 6px; text-decoration: none; color: #fff; font-size: 13px; transition: all 0.15s; }
               .stock-link:hover { background: #3a4a5a; transform: translateY(-1px); }
               .stock-link img { border-radius: 3px; }
-              .etf-section { margin-top: 30px; text-align: center; }
-              .etf-section h3 { color: #ff9800; margin-bottom: 15px; font-size: 16px; }
-              .etf-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-              @media (max-width: 900px) { .exchange-columns { grid-template-columns: 1fr; } }
+              @media (max-width: 768px) { .main-columns, .sub-columns { grid-template-columns: 1fr; } }
             </style>
 
-            <h1>Stock Watch</h1>
-            <p>選擇股票或使用 URL <code>?s=NVDA</code></p>
-
-            <div class="exchange-columns">
-              <div class="exchange-column nyse-column">
-                <h2>NYSE <span class="count">(${nyseCount})</span></h2>
-                ${Object.entries(nyseStocks).map(([cat, stocks]) => createCategory(cat, stocks)).join('')}
+            <div class="page-wrapper">
+              <div class="page-title">
+                <h1>Stock Watch</h1>
+                <p>選擇股票或使用 URL <code>?s=NVDA</code></p>
               </div>
-              <div class="exchange-column nasdaq-column">
-                <h2>NASDAQ <span class="count">(${nasdaqCount})</span></h2>
-                ${Object.entries(nasdaqStocks).map(([cat, stocks]) => createCategory(cat, stocks)).join('')}
-              </div>
-            </div>
 
-            ${amexStocks.length > 0 ? `
-              <div class="etf-section">
-                <h3>AMEX ETF (${amexStocks.length})</h3>
-                <div class="etf-grid">
-                  ${amexStocks.map(s => createStockLink(s.symbol, s.name)).join('')}
+              <div class="main-columns">
+                <div class="exchange-column nyse-column">
+                  <h2>NYSE <span class="count">(${nyseCount})</span></h2>
+                  ${Object.entries(nyseStocks).map(([cat, stocks]) => createCategory(cat, stocks)).join('')}
+                </div>
+                <div class="exchange-column nasdaq-column">
+                  <h2>NASDAQ <span class="count">(${nasdaqCount})</span></h2>
+                  ${Object.entries(nasdaqStocks).map(([cat, stocks]) => createCategory(cat, stocks)).join('')}
                 </div>
               </div>
-            ` : ''}
+
+              <div class="sub-columns">
+                <div class="exchange-column commodity-column">
+                  <h2>Commodity <span class="count">(${amexCommodityStocks.length})</span></h2>
+                  <div class="stock-grid">${amexCommodityStocks.map(s => createStockLink(s.symbol, s.name)).join('')}</div>
+                </div>
+                <div class="exchange-column etf-column">
+                  <h2>AMEX ETF <span class="count">(${amexEtfStocks.length})</span></h2>
+                  <div class="stock-grid">${amexEtfStocks.map(s => createStockLink(s.symbol, s.name)).join('')}</div>
+                </div>
+              </div>
+            </div>
           `;
         })();
       } else {

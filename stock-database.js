@@ -297,6 +297,12 @@ const stockDatabase = {
   'SPLG': { exchange: 'AMEX', name: 'SPDR Portfolio S&P 500 ETF' },
   'SPYG': { exchange: 'AMEX', name: 'SPDR Portfolio S&P 500 Growth ETF' },
   'SPYV': { exchange: 'AMEX', name: 'SPDR Portfolio S&P 500 Value ETF' },
+
+  // ========== AMEX Commodity ETF ==========
+  'GLD': { exchange: 'AMEX', name: 'SPDR Gold Shares', category: 'commodity' },
+  'SLV': { exchange: 'AMEX', name: 'iShares Silver Trust', category: 'commodity' },
+  'USO': { exchange: 'AMEX', name: 'United States Oil Fund', category: 'commodity' },
+  'UNG': { exchange: 'AMEX', name: 'United States Natural Gas Fund', category: 'commodity' },
 };
 
 // ========== 匯出 (支援 Node.js 和瀏覽器) ==========
