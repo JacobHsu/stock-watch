@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="page-title">Stock Monthly Analysis</title>
+    <link rel="icon" type="image/png" id="favicon" href="../../icons/default.png">
+    <link rel="stylesheet" href="../../styles.css" />
+
+    <script src="../../stock-database.js"></script>
+
+    <script>
+      function getSymbolFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('s')?.toUpperCase() || null;
+      }
+
+      function getStockInfo(symbol) {
+        return stockDatabase[symbol] || { exchange: 'NASDAQ', name: `${symbol} Corporation` };
+      }
+
+      const SYMBOL = getSymbolFromUrl();
+      const SYMBOL_LOWER = SYMBOL ? SYMBOL.toLowerCase() : '';
+      const STOCK_INFO = SYMBOL ? getStockInfo(SYMBOL) : null;
+
+      console.log('🎯 月度頁面:', SYMBOL, STOCK_INFO);
+
+      let tvTimeout = setTimeout(() => {
+        if (typeof TradingView === "undefined") {
+          document.querySelectorAll('[id^="tradingview_"]').forEach((el) => {
+            el.innerHTML = '<div class="fallback-content"><p>圖表暫時無法載入</p><button onclick="location.reload()">重新載入</button></div>';
+          });
+        }
+      }, 10000);
+
+      window.addEventListener("load", () => clearTimeout(tvTimeout));
+    </script>
+
+    <script
+      defer
+      src="https://s3.tradingview.com/tv.js"
+      onerror="document.querySelectorAll('[id^=tradingview_]').forEach(el => el.innerHTML='<div class=fallback-content><p>圖表載入失敗</p><button onclick=location.reload()>重新載入</button></div>')"
+    ></script>
+    <script defer src="chart-config.js"></script>
+  </head>
+  <body>
+    <script>
+      if (!SYMBOL) {
+        document.write('<div style="color:#fff;text-align:center;padding:40px;font-family:Arial"><h2>請指定股票代碼</h2><p>例如：<code style="background:#2a2e39;padding:4px 8px;border-radius:4px">?s=USO</code></p></div>');
+      } else {
+        document.title = `${SYMBOL} Monthly Technical Analysis`;
+
+        const favicon = document.getElementById('favicon');
+        favicon.href = `https://logos.stocktwits-cdn.com/${SYMBOL}.png`;
+
+        document.write(`
+          <div class="charts-grid-3x4" data-symbol="${STOCK_INFO.exchange}:${SYMBOL}" data-prefix="${SYMBOL_LOWER}">
+            <!-- 第一行 - 1週 -->
+            <div id="tradingview_${SYMBOL_LOWER}_1w_col1"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1w_col2"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1w_col3"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1w_col4"><div class="loading-placeholder"></div></div>
+
+            <!-- 第二行 - 1月 -->
+            <div id="tradingview_${SYMBOL_LOWER}_1M_col1"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1M_col2"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1M_col3"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1M_col4"><div class="loading-placeholder"></div></div>
+
+            <!-- 第三行 - 3月 -->
+            <div id="tradingview_${SYMBOL_LOWER}_3M_col1"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_3M_col2"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_3M_col3"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_3M_col4"><div class="loading-placeholder"></div></div>
+          </div>
+        `);
+
+        console.log(`✅ 月度圖表容器已生成: ${STOCK_INFO.exchange}:${SYMBOL}`);
+      }
+    </script>
+  </body>
+</html>
