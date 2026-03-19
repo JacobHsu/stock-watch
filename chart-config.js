@@ -72,15 +72,10 @@ const indicatorSets = {
         "length": 50
       }
     },
-    {
-      "id": "MAExp@tv-basicstudies",
-      "inputs": {
-        "length": 100
-      }
-    }
+    { "id": "STD;Donchian_Channels" },
   ],
   column4: [
-    "STD;MA%Ribbon",
+    "STD;Zig_Zag",
     "STD;PSAR",
     "STD;Linear_Regression",
   ]
