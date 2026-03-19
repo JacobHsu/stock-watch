@@ -34,11 +34,12 @@
 ## 功能特點
 
 - **多時間範圍分析**：同時顯示 1小時、4小時、1天 三個時間週期
+- **月度長線分析**：`stock/m/` 頁面提供 1週、1月、3月 長線視角
 - **四組技術指標組合**：
   - **組合 1**：Multi-Time Period Charts、MA Cross、Williams Alligator
   - **組合 2**：Bollinger Bands、Keltner Channels、Supertrend
-  - **組合 3**：多條移動平均線（SMA 20/50、EMA 20/50/100）
-  - **組合 4**：MA Ribbon、PSAR、Pivot Points High Low
+  - **組合 3**：多條移動平均線（SMA 20/50、EMA 20/50）+ Donchian Channels
+  - **組合 4**：Zig Zag、PSAR、Linear Regression
 - **3x4 網格布局**：12 個圖表同時顯示，便於多角度分析
 - **深色主題**：舒適的深色介面，適合長時間觀看
 - **即時數據**：透過 TradingView API 獲取即時市場數據
@@ -49,10 +50,13 @@
 
 #### 方式 1：動態頁面（推薦）⭐
 ```
-# 訪問任何股票，不需要預先生成 HTML
+# 短線分析（1小時 / 4小時 / 日線）
 https://jacobhsu.github.io/stock-watch/stock/?s=TSM
 https://jacobhsu.github.io/stock-watch/stock/?s=AAPL
-https://jacobhsu.github.io/stock-watch/stock/?s=NVDA
+
+# 月度長線分析（1週 / 1月 / 3月）
+https://jacobhsu.github.io/stock-watch/stock/m/?s=TSM
+https://jacobhsu.github.io/stock-watch/stock/m/?s=NVDA
 ```
 
 #### 方式 2：瀏覽股票列表
@@ -89,7 +93,10 @@ stock-watch/
 ├── chart-config.js    # 共用的 JavaScript 邏輯（TradingView 配置）
 ├── styles.css         # 共用樣式表（網格布局和主題設定）
 ├── stock/
-│   ├── index.html     # 🆕 動態股票頁面 + 智能列表
+│   ├── index.html     # 🆕 動態股票頁面 + 智能列表（1h/4h/1D）
+│   ├── m/
+│   │   ├── index.html     # 月度分析頁面（1W/1M/3M）
+│   │   └── chart-config.js
 │   ├── tsm.html       # 靜態頁面（可選）
 │   └── ...
 ├── etf/               # ETF 分析頁面
@@ -107,8 +114,6 @@ stock-watch/
 │   ├── orcl.html      # Oracle Corporation
 │   ├── tsla.html      # Tesla Inc.
 │   └── tsm.html       # Taiwan Semiconductor
-├── crypto/            # 加密貨幣分析頁面
-│   └── xaut.html      # Tether Gold
 ├── icons/             # Logo 資源目錄
 │   ├── aapl.png       # Apple Logo
 │   ├── gld.png        # Gold ETF Logo
@@ -126,20 +131,25 @@ stock-watch/
 
 ## 技術指標說明
 
-### 第一列（1小時週期）
+### 短線頁面 `stock/?s=XXX`（1小時 / 4小時 / 日線）
 
-- **Col 1**：多時間週期圖表、移動平均交叉、鱷魚線指標
-- **Col 2**：布林通道、肯特納通道、超級趨勢
-- **Col 3**：SMA(20/50) + EMA(20/50/100)
-- **Col 4**：移動平均帶、拋物線 SAR、樞軸高低點
+| 組合 | 指標 |
+|------|------|
+| **Col 1** | Multi-Time Period Charts、MA Cross、Williams Alligator |
+| **Col 2** | Bollinger Bands、Keltner Channels、Supertrend |
+| **Col 3** | SMA(20/50)、EMA(20/50)、Donchian Channels |
+| **Col 4** | Zig Zag、PSAR、Linear Regression |
 
-### 第二列（4小時週期）
+三列分別對應 1小時、4小時、日線週期。
 
-相同的四組指標配置，用於觀察中期趨勢
+### 月度頁面 `stock/m/?s=XXX`（1週 / 1月 / 3月）
 
-### 第三列（日線週期）
-
-相同的四組指標配置，用於觀察長期趨勢
+| 組合 | 指標 |
+|------|------|
+| **Col 1** | Multi-Time Period Charts、Williams Fractals、Williams Alligator |
+| **Col 2** | Bollinger Bands、Keltner Channels、Supertrend |
+| **Col 3** | SMA(20/50)、EMA(20/50)、Donchian Channels |
+| **Col 4** | MA Ribbon、PSAR、Linear Regression（3月欄改為 Technical Ratings）|
 
 ## 技術細節
 
