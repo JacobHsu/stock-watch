@@ -39,7 +39,7 @@ const baseChartConfig = {
 const indicatorSets = {
   column1: [
     "STD;Multi-Time%Period%Charts",
-    "STD;MA%1Cross",
+    "STD;Whilliams_Fractals",
     "STD;Williams_Alligator"
   ],
   column2: [
