@@ -1,0 +1,29 @@
+{
+  "name": "stock-watch",
+  "version": "1.0.0",
+  "description": "股票技術分析即時儀表板，支援多個標的，使用 TradingView 圖表展示多時間範圍和多種技術指標組合。",
+  "main": "chart-config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobHsu/stock-watch.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JacobHsu/stock-watch/issues"
+  },
+  "homepage": "https://github.com/JacobHsu/stock-watch#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.1.0"
+  }
+}
