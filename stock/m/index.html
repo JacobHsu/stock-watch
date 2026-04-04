@@ -16,7 +16,7 @@
       }
 
       function getStockInfo(symbol) {
-        return stockDatabase[symbol] || { exchange: 'NASDAQ', name: `${symbol} Corporation` };
+        return stockDatabase[symbol] || { exchange: 'NYSE', name: `${symbol} Corporation` };
       }
 
       const SYMBOL = getSymbolFromUrl();
