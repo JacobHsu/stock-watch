@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="page-title">ETF / Sector Technical Analysis</title>
+    <link rel="icon" type="image/png" id="favicon" href="../icons/default.png">
+    <link rel="stylesheet" href="../styles.css" />
+
+    <script>
+      // ========== 自帶資料庫（不依賴 stock-database.js）==========
+      // 每個項目可選填 tvSymbol 覆寫 TradingView 圖表代碼（EXCHANGE:SYMBOL）
+      const etfDatabase = {
+        // DRAM / 記憶體
+        // isHeader: 只作為可點選的類別標題（不顯示成個股 chip）
+        'DRAM': { exchange: 'NASDAQ', name: 'Roundhill Memory ETF', tvSymbol: 'DRAM', category: 'DRAM', isHeader: true },
+        'SKHY': { exchange: 'NASDAQ', name: 'SK Hynix Inc.',            tvSymbol: 'SKHY', category: 'DRAM' },
+        'SNDK': { exchange: 'NASDAQ', name: 'SanDisk Corporation',      category: 'DRAM' },
+        'MU':   { exchange: 'NASDAQ', name: 'Micron Technology Inc.',   category: 'DRAM' },
+        'STX':  { exchange: 'NASDAQ', name: 'Seagate Technology Holdings plc', category: 'DRAM' },
+        'WDC':  { exchange: 'NASDAQ', name: 'Western Digital Corp.',    category: 'DRAM' },
+      };
+
+      // ========== 核心函數 ==========
+      function getSymbolFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        // 使用 's' 參數，避免 TradingView 自動讀取 'symbol' 參數覆蓋交易所設定
+        return urlParams.get('s')?.toUpperCase() || null;
+      }
+
+      function getStockInfo(symbol) {
+        return etfDatabase[symbol] || {
+          exchange: 'NASDAQ',
+          name: `${symbol} Corporation`
+        };
+      }
+
+      // 取得 TradingView 圖表代碼（EXCHANGE:SYMBOL）
+      function getTvSymbol(symbol, info) {
+        return info.tvSymbol || `${info.exchange}:${symbol}`;
+      }
+
+      // ========== 在 HTML 載入前先取得代碼並準備資料 ==========
+      const SYMBOL = getSymbolFromUrl();
+      const SYMBOL_LOWER = SYMBOL ? SYMBOL.toLowerCase() : '';
+      const STOCK_INFO = SYMBOL ? getStockInfo(SYMBOL) : null;
+
+      console.log('🎯 動態載入:', SYMBOL, STOCK_INFO);
+
+      // 載入超時檢查
+      let tvTimeout = setTimeout(() => {
+        if (typeof TradingView === "undefined") {
+          document.querySelectorAll('[id^="tradingview_"]').forEach((el) => {
+            el.innerHTML = '<div class="fallback-content"><p>圖表暫時無法載入</p><button onclick="location.reload()">重新載入</button></div>';
+          });
+        }
+      }, 10000);
+
+      window.addEventListener("load", () => clearTimeout(tvTimeout));
+    </script>
+
+    <!-- TradingView 腳本 -->
+    <script
+      defer
+      src="https://s3.tradingview.com/tv.js"
+      onerror="document.querySelectorAll('[id^=tradingview_]').forEach(el => el.innerHTML='<div class=fallback-content><p>圖表載入失敗</p><button onclick=location.reload()>重新載入</button></div>')"
+    ></script>
+    <script defer src="../chart-config.js"></script>
+  </head>
+  <body>
+    <script>
+      // ========== 生成頁面內容 ==========
+      if (!SYMBOL) {
+        // 沒有代碼，顯示總表（選擇頁面）
+        document.write(`
+          <div id="stock-selector" style="padding: 40px; text-align: center; color: #fff; font-family: Arial;">
+            <h1>📊 ETF / Sector Watch</h1>
+            <p>正在載入列表...</p>
+            <div style="margin-top: 20px;">
+              <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #2a2e39; border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            </div>
+            <style>
+              @keyframes spin { to { transform: rotate(360deg); } }
+            </style>
+          </div>
+        `);
+
+        (function() {
+          // 獲取 icon URL
+          function getIconUrl(symbol) {
+            return `https://logos.stocktwits-cdn.com/${symbol.toUpperCase()}.png`;
+          }
+
+          // 生成連結 HTML（帶多重 fallback）
+          function createStockLink(symbol, name) {
+            const iconUrl = getIconUrl(symbol);
+            const symbolLower = symbol.toLowerCase();
+            // fallback: StockTwits -> eToro -> 本地 svg -> 本地 png -> 隱藏
+            const fallback = `onerror="if(this.src.includes('stocktwits')){this.src='https://etoro-cdn.etorostatic.com/market-avatars/${symbolLower}/150x150.png'}else if(this.src.includes('etoro')){this.src='../icons/${symbolLower}.svg'}else if(this.src.includes('.svg')){this.src='../icons/${symbolLower}.png'}else{this.style.display='none'}"`;
+            return `<a href="?s=${symbol}" title="${name}" class="stock-link">
+              <img src="${iconUrl}" width="18" height="18" ${fallback}>
+              <span>${symbol}</span>
+            </a>`;
+          }
+
+          // 生成類別區塊 HTML（標題可點選）
+          function createCategory(title, stocks) {
+            if (!stocks || stocks.length === 0) return '';
+            return `
+              <div class="category">
+                <h4><a href="?s=${encodeURIComponent(title)}" class="category-link">${title}</a></h4>
+                <div class="stock-grid">
+                  ${stocks.map(s => createStockLink(s.symbol, s.name)).join('')}
+                </div>
+              </div>
+            `;
+          }
+
+          // 依 category 分組（略過 isHeader 的類別標題項目）
+          const grouped = {};
+          Object.entries(etfDatabase).forEach(([symbol, info]) => {
+            if (info.isHeader) return;
+            const cat = info.category || '其他';
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push({ symbol, name: info.name });
+          });
+
+          const total = Object.values(grouped).flat().length;
+
+          document.getElementById('stock-selector').innerHTML = `
+            <style>
+              html, body { height: auto; overflow: auto; }
+              .page-wrapper { padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; color: #fff; }
+              .page-title { text-align: center; margin-bottom: 20px; }
+              .page-title p { color: #888; font-size: 14px; }
+              .page-title code { background: #2a2e39; padding: 4px 8px; border-radius: 4px; }
+              .main-columns { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; max-width: 900px; margin-left: auto; margin-right: auto; }
+              .exchange-column { background: #1a1a1a; border-radius: 12px; padding: 20px; }
+              .exchange-column h2 { margin: 0 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid #333; font-size: 18px; color: #ff9800; border-color: #ff9800; }
+              .exchange-column h2 .count { font-weight: normal; color: #666; font-size: 14px; }
+              .category { margin-bottom: 20px; }
+              .category h4 { margin: 0 0 10px 0; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+              .category-link { color: #ff9800; text-decoration: none; border-bottom: 1px dashed #ff9800; padding-bottom: 2px; transition: color 0.15s; }
+              .category-link:hover { color: #ffb84d; }
+              .stock-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+              .stock-link { display: inline-flex; align-items: center; gap: 6px; background: #2a2e39; padding: 6px 12px; border-radius: 6px; text-decoration: none; color: #fff; font-size: 13px; transition: all 0.15s; }
+              .stock-link:hover { background: #3a4a5a; transform: translateY(-1px); }
+              .stock-link img { border-radius: 3px; }
+            </style>
+
+            <div class="page-wrapper">
+              <div class="page-title">
+                <h1>ETF / Sector Watch</h1>
+                <p>選擇標的或使用 URL <code>?s=MU</code></p>
+              </div>
+
+              <div class="main-columns">
+                <div class="exchange-column">
+                  <h2>總表 <span class="count">(${total})</span></h2>
+                  ${Object.entries(grouped).map(([cat, stocks]) => createCategory(cat, stocks)).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+        })();
+      } else {
+        // 有代碼，生成圖表容器
+        document.title = `${SYMBOL} Technical Analysis`;
+
+        const TV_SYMBOL = getTvSymbol(SYMBOL, STOCK_INFO);
+
+        // 設置 favicon - 優先使用 StockTwits CDN
+        const favicon = document.getElementById('favicon');
+        favicon.href = `https://logos.stocktwits-cdn.com/${SYMBOL}.png`;
+        const img = new Image();
+        img.onerror = () => {
+          favicon.href = `https://etoro-cdn.etorostatic.com/market-avatars/${SYMBOL_LOWER}/150x150.png`;
+          const img2 = new Image();
+          img2.onerror = () => {
+            favicon.href = `../icons/${SYMBOL_LOWER}.svg`;
+            const img3 = new Image();
+            img3.onerror = () => { favicon.href = `../icons/${SYMBOL_LOWER}.png`; };
+            img3.src = favicon.href;
+          };
+          img2.src = favicon.href;
+        };
+        img.src = favicon.href;
+
+        // 生成圖表容器 HTML
+        document.write(`
+          <div class="charts-grid-3x4" data-symbol="${TV_SYMBOL}" data-prefix="${SYMBOL_LOWER}">
+            <!-- 第一行 - 1小時 -->
+            <div id="tradingview_${SYMBOL_LOWER}_1h_col1"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1h_col2"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1h_col3"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1h_col4"><div class="loading-placeholder"></div></div>
+
+            <!-- 第二行 - 4小時 -->
+            <div id="tradingview_${SYMBOL_LOWER}_4h_col1"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_4h_col2"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_4h_col3"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_4h_col4"><div class="loading-placeholder"></div></div>
+
+            <!-- 第三行 - 1天 -->
+            <div id="tradingview_${SYMBOL_LOWER}_1d_col1"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1d_col2"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1d_col3"><div class="loading-placeholder"></div></div>
+            <div id="tradingview_${SYMBOL_LOWER}_1d_col4"><div class="loading-placeholder"></div></div>
+          </div>
+        `);
+
+        console.log(`✅ 已生成圖表容器: ${TV_SYMBOL}`);
+
+        // ========== 鍵盤快捷鍵 ==========
+        document.addEventListener('keydown', (e) => {
+          // Shift + M: 開啟 MoneyDJ 股票介紹頁面
+          if (e.shiftKey && e.key.toUpperCase() === 'M') {
+            e.preventDefault();
+            const moneydjUrl = `https://www.moneydj.com/us/basic/basic0001/${SYMBOL}`;
+            window.open(moneydjUrl, '_blank');
+            console.log(`🔗 開啟 MoneyDJ: ${moneydjUrl}`);
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

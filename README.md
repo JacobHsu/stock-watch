@@ -12,6 +12,7 @@
 ## 支援的標的
 
 ### ETF
+- **DRAM 記憶體總表** - <a href="https://jacobhsu.github.io/stock-watch/etf/" target="_blank" rel="noopener">`etf/`</a>（SKHY、SNDK、MU、STX、WDC + Roundhill Memory ETF `DRAM`）
 - **EWT** (iShares MSCI Taiwan ETF) - `etf/ewt.html`
 - **GLD** (SPDR Gold Trust) - `etf/gld.html`
 - **QQQ** (Invesco QQQ Trust) - `etf/qqq.html`
@@ -49,27 +50,24 @@
 ### 使用方法
 
 #### 方式 1：動態頁面（推薦）⭐
-```
-# 短線分析（1小時 / 4小時 / 日線）
-https://jacobhsu.github.io/stock-watch/stock/?s=TSM
-https://jacobhsu.github.io/stock-watch/stock/?s=AAPL
 
-# 月度長線分析（1週 / 1月 / 3月）
-https://jacobhsu.github.io/stock-watch/stock/m/?s=TSM
-https://jacobhsu.github.io/stock-watch/stock/m/?s=NVDA
-```
+短線分析（1小時 / 4小時 / 日線）：
+- <a href="https://jacobhsu.github.io/stock-watch/stock/?s=TSM" target="_blank" rel="noopener">stock/?s=TSM</a>
+- <a href="https://jacobhsu.github.io/stock-watch/stock/?s=AAPL" target="_blank" rel="noopener">stock/?s=AAPL</a>
 
-#### 方式 2：瀏覽股票列表
-```
-# 查看所有可用股票（按 Icon 狀態分類）
-https://jacobhsu.github.io/stock-watch/stock/
-```
+月度長線分析（1週 / 1月 / 3月）：
+- <a href="https://jacobhsu.github.io/stock-watch/stock/m/?s=TSM" target="_blank" rel="noopener">stock/m/?s=TSM</a>
+- <a href="https://jacobhsu.github.io/stock-watch/stock/m/?s=NVDA" target="_blank" rel="noopener">stock/m/?s=NVDA</a>
+
+#### 方式 2：瀏覽總表
+
+- <a href="https://jacobhsu.github.io/stock-watch/stock/" target="_blank" rel="noopener">stock/</a> — 股票總表（按 Icon 狀態分類）
+- <a href="https://jacobhsu.github.io/stock-watch/etf/" target="_blank" rel="noopener">etf/</a> — ETF / 類股總表（DRAM 記憶體等）
+- <a href="https://jacobhsu.github.io/stock-watch/etf/?s=DRAM" target="_blank" rel="noopener">etf/?s=DRAM</a> — Roundhill Memory ETF（DRAM）
 
 #### 方式 3：靜態頁面
-```
-# 使用預先生成的靜態 HTML（如果有）
-https://jacobhsu.github.io/stock-watch/stock/tsm.html
-```
+
+- <a href="https://jacobhsu.github.io/stock-watch/stock/tsm.html" target="_blank" rel="noopener">stock/tsm.html</a> — 使用預先生成的靜態 HTML（如果有）
 
 ### 添加新股票
 
@@ -100,6 +98,7 @@ stock-watch/
 │   ├── tsm.html       # 靜態頁面（可選）
 │   └── ...
 ├── etf/               # ETF 分析頁面
+│   ├── index.html     # 🆕 DRAM 記憶體總表 + 動態頁面（?s=DRAM 等）
 │   ├── ewt.html       # iShares MSCI Taiwan ETF
 │   ├── gld.html       # SPDR Gold Trust
 │   ├── qqq.html       # Invesco QQQ Trust
