@@ -290,6 +290,68 @@ const stockDatabase = {
   'VRT': { exchange: 'NYSE', name: 'Vertiv Holdings Co.' },
   'CME': { exchange: 'NASDAQ', name: 'CME Group Inc.' },
 
+  // ========== Nasdaq-100 / QQQ 補充成分股 ==========
+  // 資料來源：docs/nasdaq100-constituents.md（2026-08-09）
+
+  // 半導體 / 光電
+  'ARM': { exchange: 'NASDAQ', name: 'Arm Holdings plc' },
+  'ASML': { exchange: 'NASDAQ', name: 'ASML Holding N.V.' },
+  'ALAB': { exchange: 'NASDAQ', name: 'Astera Labs Inc.' },
+  'NXPI': { exchange: 'NASDAQ', name: 'NXP Semiconductors N.V.' },
+  'MCHP': { exchange: 'NASDAQ', name: 'Microchip Technology Inc.' },
+  'MPWR': { exchange: 'NASDAQ', name: 'Monolithic Power Systems Inc.' },
+  'LITE': { exchange: 'NASDAQ', name: 'Lumentum Holdings Inc.' },
+
+  // 硬體與儲存
+  'STX': { exchange: 'NASDAQ', name: 'Seagate Technology Holdings plc' },
+  'SNDK': { exchange: 'NASDAQ', name: 'SanDisk Corporation' },
+  'WDC': { exchange: 'NASDAQ', name: 'Western Digital Corporation' },
+
+  // 軟體與服務
+  'DDOG': { exchange: 'NASDAQ', name: 'Datadog Inc.' },
+  'WDAY': { exchange: 'NASDAQ', name: 'Workday Inc.' },
+  'SHOP': { exchange: 'NASDAQ', name: 'Shopify Inc.' },
+  'PAYX': { exchange: 'NASDAQ', name: 'Paychex Inc.' },
+
+  // 雲端 / AI
+  'CRWV': { exchange: 'NASDAQ', name: 'CoreWeave Inc.' },
+  'NBIS': { exchange: 'NASDAQ', name: 'Nebius Group N.V.' },
+
+  // 電商與網路
+  'MELI': { exchange: 'NASDAQ', name: 'MercadoLibre Inc.' },
+  'PDD': { exchange: 'NASDAQ', name: 'PDD Holdings Inc.' },
+
+  // 醫療健康
+  'DXCM': { exchange: 'NASDAQ', name: 'DexCom Inc.' },
+  'GEHC': { exchange: 'NASDAQ', name: 'GE HealthCare Technologies Inc.' },
+
+  // 消費與媒體
+  'TTWO': { exchange: 'NASDAQ', name: 'Take-Two Interactive Software Inc.' },
+  'TRI': { exchange: 'NASDAQ', name: 'Thomson Reuters Corporation' },
+
+  // 工業
+  'ODFL': { exchange: 'NASDAQ', name: 'Old Dominion Freight Line Inc.' },
+  'ROP': { exchange: 'NASDAQ', name: 'Roper Technologies Inc.' },
+  'AXON': { exchange: 'NASDAQ', name: 'Axon Enterprise Inc.' },
+  'TER': { exchange: 'NASDAQ', name: 'Teradyne Inc.' },
+
+  // 消費品
+  'KDP': { exchange: 'NASDAQ', name: 'Keurig Dr Pepper Inc.' },
+  'KHC': { exchange: 'NASDAQ', name: 'Kraft Heinz Company' },
+  'MNST': { exchange: 'NASDAQ', name: 'Monster Beverage Corporation' },
+  'CCEP': { exchange: 'NASDAQ', name: 'Coca-Cola Europacific Partners plc' },
+
+  // 能源與公用事業
+  'FANG': { exchange: 'NASDAQ', name: 'Diamondback Energy Inc.' },
+  'BKR': { exchange: 'NASDAQ', name: 'Baker Hughes Company' },
+  'EXC': { exchange: 'NASDAQ', name: 'Exelon Corporation' },
+  'XEL': { exchange: 'NASDAQ', name: 'Xcel Energy Inc.' },
+
+  // 太空與基礎建設
+  'SPCX': { exchange: 'NASDAQ', name: 'Space Exploration Technologies Corp.' },
+  'RKLB': { exchange: 'NASDAQ', name: 'Rocket Lab Corporation' },
+  'FER': { exchange: 'NASDAQ', name: 'Ferrovial SE' },
+
   // ========== AMEX ETF ==========
   'SPY': { exchange: 'AMEX', name: 'SPDR S&P 500 ETF Trust' },
   'VOO': { exchange: 'AMEX', name: 'Vanguard S&P 500 ETF' },
