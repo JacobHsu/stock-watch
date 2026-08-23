@@ -40,12 +40,14 @@ const indicatorSets = {
   column1: [
     "STD;Multi-Time%Period%Charts",
     "STD;Whilliams_Fractals",
-    "STD;Williams_Alligator"
+    "STD;Williams_Alligator",
+    "STD;PSAR",
   ],
   column2: [
     "BB@tv-basicstudies",
     "KLTNR@tv-basicstudies",
-    "STD;Supertrend"
+    "STD;MA%1Cross",
+    "STD;Volatility_Stop"
   ],
   column3: [
     {
@@ -76,8 +78,9 @@ const indicatorSets = {
   ],
   column4: [
     "STD;Zig_Zag",
-    "STD;PSAR",
+    "STD;Supertrend",
     "STD;Linear_Regression",
+    "STD;VWMA"
   ]
 };
 
@@ -103,6 +106,7 @@ const column3ChartConfig = {
   // 指標顏色覆蓋配置
   studies_overrides: {
     "moving average.ma.color.0": "#ff9800",
+    "moving average exponential.ma.color.0": "#00bcd4",
   },
 
   // 圖表樣式

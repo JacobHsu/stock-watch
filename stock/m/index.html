@@ -19,9 +19,15 @@
         return stockDatabase[symbol] || { exchange: 'NYSE', name: `${symbol} Corporation` };
       }
 
+      // 取得 TradingView 圖表代碼，資料庫可用 tvSymbol 覆寫預設的 EXCHANGE:SYMBOL
+      function getTvSymbol(symbol, info) {
+        return info.tvSymbol || `${info.exchange}:${symbol}`;
+      }
+
       const SYMBOL = getSymbolFromUrl();
       const SYMBOL_LOWER = SYMBOL ? SYMBOL.toLowerCase() : '';
       const STOCK_INFO = SYMBOL ? getStockInfo(SYMBOL) : null;
+      const TV_SYMBOL = STOCK_INFO ? getTvSymbol(SYMBOL, STOCK_INFO) : null;
 
       console.log('🎯 月度頁面:', SYMBOL, STOCK_INFO);
 
@@ -54,7 +60,7 @@
         favicon.href = `https://logos.stocktwits-cdn.com/${SYMBOL}.png`;
 
         document.write(`
-          <div class="charts-grid-3x4" data-symbol="${STOCK_INFO.exchange}:${SYMBOL}" data-prefix="${SYMBOL_LOWER}">
+          <div class="charts-grid-3x4" data-symbol="${TV_SYMBOL}" data-prefix="${SYMBOL_LOWER}">
             <!-- 第一行 - 1週 -->
             <div id="tradingview_${SYMBOL_LOWER}_1w_col1"><div class="loading-placeholder"></div></div>
             <div id="tradingview_${SYMBOL_LOWER}_1w_col2"><div class="loading-placeholder"></div></div>
@@ -75,7 +81,7 @@
           </div>
         `);
 
-        console.log(`✅ 月度圖表容器已生成: ${STOCK_INFO.exchange}:${SYMBOL}`);
+        console.log(`✅ 月度圖表容器已生成: ${TV_SYMBOL}`);
       }
     </script>
   </body>

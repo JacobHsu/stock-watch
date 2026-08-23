@@ -12,13 +12,15 @@
 ## 支援的標的
 
 ### ETF
-- **DRAM 記憶體總表** - <a href="https://jacobhsu.github.io/stock-watch/etf/" target="_blank" rel="noopener">`etf/`</a>（SKHY、SNDK、MU、STX、WDC + Roundhill Memory ETF `DRAM`）
-- **EWT** (iShares MSCI Taiwan ETF) - `etf/ewt.html`
-- **GLD** (SPDR Gold Trust) - `etf/gld.html`
-- **QQQ** (Invesco QQQ Trust) - `etf/qqq.html`
-- **VT** (Vanguard Total World Stock ETF) - `etf/vt.html`
-- **VTI** (Vanguard Total Stock Market ETF) - `etf/vti.html`
-- **VXUS** (Vanguard Total International Stock ETF) - `etf/vxus.html`
+全部整合在主頁 <a href="https://jacobhsu.github.io/stock-watch/stock/" target="_blank" rel="noopener">`stock/`</a>，資料來源為 `stock-database.js`，以 `category` 欄位分組：
+
+- **指數** (`category` 留空) - SPY、VOO、IVV、SPLG、SPYG、SPYV
+- **國家** (`category: 'country'`) - EWT、EWJ、EWY、EWH、MCHI、FXI、INDA、EWS、EWM、THD、EIDO、EPHE、VNM、EWA、EWC、EWW、EWZ、EWG、EWU、EWQ、EWL、EWN
+- **區域 / 全球** (`category: 'region'`) - EFA、EEM、VGK、VWO、ACWI
+- **Commodity** (`category: 'commodity'`) - GLD、SLV、USO、UNG
+- **主題** (`category: 'theme'` + `stock/index.html` 的 `themes` 定義) - DRAM 記憶體（SKHY、SNDK、MU、STX、WDC，標題可點開 Roundhill Memory ETF `DRAM`）
+
+> ETF 不一定都在 AMEX：MCHI／ACWI 在 NASDAQ，INDA／VNM／DRAM 在 CBOE。分類邏輯以 `category` 優先於 `exchange`，所以它們仍集中顯示在 ETF 區塊，但圖表用各自正確的交易所代碼。
 
 ### 股票 (Stock)
 - **AAPL** (Apple Inc.) - `stock/aapl.html`
@@ -36,12 +38,15 @@
 
 - **多時間範圍分析**：同時顯示 1小時、4小時、1天 三個時間週期
 - **月度長線分析**：`stock/m/` 頁面提供 1週、1月、3月 長線視角
-- **四組技術指標組合**：
-  - **組合 1**：Multi-Time Period Charts、MA Cross、Williams Alligator
-  - **組合 2**：Bollinger Bands、Keltner Channels、Supertrend
+- **四組技術指標組合**（短線頁面）：
+  - **組合 1**：Multi-Time Period Charts、Williams Fractals、Williams Alligator、PSAR
+  - **組合 2**：Bollinger Bands、Keltner Channels、MA Cross、Volatility Stop
   - **組合 3**：多條移動平均線（SMA 20/50、EMA 20/50）+ Donchian Channels
-  - **組合 4**：Zig Zag、PSAR、Linear Regression
+  - **組合 4**：Zig Zag、Supertrend、Linear Regression、VWMA
 - **3x4 網格布局**：12 個圖表同時顯示，便於多角度分析
+- **鍵盤快捷鍵**（圖表頁面）：
+  - `Shift + M` — 開啟同標的的月度長線頁 `stock/m/?s=`
+  - `Shift + J` — 開啟 MoneyDJ 個股介紹頁
 - **深色主題**：舒適的深色介面，適合長時間觀看
 - **即時數據**：透過 TradingView API 獲取即時市場數據
 
@@ -61,9 +66,11 @@
 
 #### 方式 2：瀏覽總表
 
-- <a href="https://jacobhsu.github.io/stock-watch/stock/" target="_blank" rel="noopener">stock/</a> — 股票總表（按 Icon 狀態分類）
-- <a href="https://jacobhsu.github.io/stock-watch/etf/" target="_blank" rel="noopener">etf/</a> — ETF / 類股總表（DRAM 記憶體等）
-- <a href="https://jacobhsu.github.io/stock-watch/etf/?s=DRAM" target="_blank" rel="noopener">etf/?s=DRAM</a> — Roundhill Memory ETF（DRAM）
+- <a href="https://jacobhsu.github.io/stock-watch/stock/" target="_blank" rel="noopener">stock/</a> — 總表（NYSE / NASDAQ / Commodity / 主題 / ETF）
+- <a href="https://jacobhsu.github.io/stock-watch/stock/?s=DRAM" target="_blank" rel="noopener">stock/?s=DRAM</a> — Roundhill Memory ETF（DRAM）
+- <a href="https://jacobhsu.github.io/stock-watch/stock/?s=EWT" target="_blank" rel="noopener">stock/?s=EWT</a> — iShares MSCI Taiwan ETF（EWT）
+
+> 舊的 `etf/` 頁面（含 `etf/ewt.html`）已整合進主頁並移除，改用 `stock/?s=` 存取。
 
 #### 方式 3：靜態頁面
 
@@ -91,28 +98,10 @@ stock-watch/
 ├── chart-config.js    # 共用的 JavaScript 邏輯（TradingView 配置）
 ├── styles.css         # 共用樣式表（網格布局和主題設定）
 ├── stock/
-│   ├── index.html     # 🆕 動態股票頁面 + 智能列表（1h/4h/1D）
-│   ├── m/
-│   │   ├── index.html     # 月度分析頁面（1W/1M/3M）
-│   │   └── chart-config.js
-│   ├── tsm.html       # 靜態頁面（可選）
-│   └── ...
-├── etf/               # ETF 分析頁面
-│   ├── index.html     # 🆕 DRAM 記憶體總表 + 動態頁面（?s=DRAM 等）
-│   ├── ewt.html       # iShares MSCI Taiwan ETF
-│   ├── gld.html       # SPDR Gold Trust
-│   ├── qqq.html       # Invesco QQQ Trust
-│   ├── vt.html        # Vanguard Total World Stock ETF
-│   ├── vti.html       # Vanguard Total Stock Market ETF
-│   └── vxus.html      # Vanguard Total International Stock ETF
-├── stock/             # 股票分析頁面
-│   ├── aapl.html      # Apple Inc.
-│   ├── goog.html      # Alphabet Inc.
-│   ├── meta.html      # Meta Platforms Inc.
-│   ├── nvda.html      # NVIDIA Corporation
-│   ├── orcl.html      # Oracle Corporation
-│   ├── tsla.html      # Tesla Inc.
-│   └── tsm.html       # Taiwan Semiconductor
+│   ├── index.html     # 動態頁面 + 總表（股票 / Commodity / 主題 / ETF，1h/4h/1D）
+│   └── m/
+│       ├── index.html     # 月度分析頁面（1W/1M/3M）
+│       └── chart-config.js
 ├── icons/             # Logo 資源目錄
 │   ├── aapl.png       # Apple Logo
 │   ├── gld.png        # Gold ETF Logo
@@ -134,12 +123,14 @@ stock-watch/
 
 | 組合 | 指標 |
 |------|------|
-| **Col 1** | Multi-Time Period Charts、MA Cross、Williams Alligator |
-| **Col 2** | Bollinger Bands、Keltner Channels、Supertrend |
+| **Col 1** | Multi-Time Period Charts、Williams Fractals、Williams Alligator、PSAR |
+| **Col 2** | Bollinger Bands、Keltner Channels、MA Cross、Volatility Stop |
 | **Col 3** | SMA(20/50)、EMA(20/50)、Donchian Channels |
-| **Col 4** | Zig Zag、PSAR、Linear Regression |
+| **Col 4** | Zig Zag、Supertrend、Linear Regression、VWMA |
 
 三列分別對應 1小時、4小時、日線週期。
+
+> ⚠️ **每欄最多 5 個指標。** 免費的 `tv.js` 嵌入式 widget 只會套用 `studies` 陣列的前 5 個，第 6 個以後靜默丟棄，不會有任何錯誤訊息。實測 4/5 個全數生效，6 個生效 5 個、7 個也只生效 5 個。付費版 Charting Library 才有 `study_count_limit` 可調，免費 widget 沒有這個參數。加指標前先數一下 `chart-config.js` 裡該欄的長度。
 
 ### 月度頁面 `stock/m/?s=XXX`（1週 / 1月 / 3月）
 

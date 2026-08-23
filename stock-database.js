@@ -360,6 +360,45 @@ const stockDatabase = {
   'SPYG': { exchange: 'AMEX', name: 'SPDR Portfolio S&P 500 Growth ETF' },
   'SPYV': { exchange: 'AMEX', name: 'SPDR Portfolio S&P 500 Value ETF' },
 
+  // ========== Country ETF ==========
+  // exchange 為 TradingView 的交易所代碼（已逐檔驗證），category 決定主頁顯示分組
+  // 亞太
+  'EWT':  { exchange: 'AMEX',   name: 'iShares MSCI Taiwan ETF', category: 'country' },
+  'EWJ':  { exchange: 'AMEX',   name: 'iShares MSCI Japan ETF', category: 'country' },
+  'EWY':  { exchange: 'AMEX',   name: 'iShares MSCI South Korea ETF', category: 'country' },
+  'EWH':  { exchange: 'AMEX',   name: 'iShares MSCI Hong Kong ETF', category: 'country' },
+  'MCHI': { exchange: 'NASDAQ', name: 'iShares MSCI China ETF', category: 'country' },
+  'FXI':  { exchange: 'AMEX',   name: 'iShares China Large-Cap ETF', category: 'country' },
+  'INDA': { exchange: 'CBOE',   name: 'iShares MSCI India ETF', category: 'country' },
+  'EWS':  { exchange: 'AMEX',   name: 'iShares MSCI Singapore ETF', category: 'country' },
+  'EWM':  { exchange: 'AMEX',   name: 'iShares MSCI Malaysia ETF', category: 'country' },
+  'THD':  { exchange: 'AMEX',   name: 'iShares MSCI Thailand ETF', category: 'country' },
+  'EIDO': { exchange: 'AMEX',   name: 'iShares MSCI Indonesia ETF', category: 'country' },
+  'EPHE': { exchange: 'AMEX',   name: 'iShares MSCI Philippines ETF', category: 'country' },
+  'VNM':  { exchange: 'CBOE',   name: 'VanEck Vietnam ETF', category: 'country' },
+  'EWA':  { exchange: 'AMEX',   name: 'iShares MSCI Australia ETF', category: 'country' },
+  // 美洲
+  'EWC':  { exchange: 'AMEX',   name: 'iShares MSCI Canada ETF', category: 'country' },
+  'EWW':  { exchange: 'AMEX',   name: 'iShares MSCI Mexico ETF', category: 'country' },
+  'EWZ':  { exchange: 'AMEX',   name: 'iShares MSCI Brazil ETF', category: 'country' },
+  // 歐洲
+  'EWG':  { exchange: 'AMEX',   name: 'iShares MSCI Germany ETF', category: 'country' },
+  'EWU':  { exchange: 'AMEX',   name: 'iShares MSCI United Kingdom ETF', category: 'country' },
+  'EWQ':  { exchange: 'AMEX',   name: 'iShares MSCI France ETF', category: 'country' },
+  'EWL':  { exchange: 'AMEX',   name: 'iShares MSCI Switzerland ETF', category: 'country' },
+  'EWN':  { exchange: 'AMEX',   name: 'iShares MSCI Netherlands ETF', category: 'country' },
+
+  // ========== Region / Global ETF ==========
+  'EFA':  { exchange: 'AMEX',   name: 'iShares MSCI EAFE ETF', category: 'region' },
+  'EEM':  { exchange: 'AMEX',   name: 'iShares MSCI Emerging Markets ETF', category: 'region' },
+  'VGK':  { exchange: 'AMEX',   name: 'Vanguard FTSE Europe ETF', category: 'region' },
+  'VWO':  { exchange: 'AMEX',   name: 'Vanguard FTSE Emerging Markets ETF', category: 'region' },
+  'ACWI': { exchange: 'NASDAQ', name: 'iShares MSCI ACWI ETF', category: 'region' },
+
+  // ========== 主題族群（跨交易所，只在「主題」區塊顯示）==========
+  'DRAM': { exchange: 'CBOE',   name: 'Roundhill Memory ETF', category: 'theme' },
+  'SKHY': { exchange: 'NASDAQ', name: 'SK Hynix Inc.', category: 'theme' },
+
   // ========== AMEX Commodity ETF ==========
   'GLD': { exchange: 'AMEX', name: 'SPDR Gold Shares', category: 'commodity' },
   'SLV': { exchange: 'AMEX', name: 'iShares Silver Trust', category: 'commodity' },
