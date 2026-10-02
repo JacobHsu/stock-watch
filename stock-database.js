@@ -395,6 +395,13 @@ const stockDatabase = {
   'VWO':  { exchange: 'AMEX',   name: 'Vanguard FTSE Emerging Markets ETF', category: 'region' },
   'ACWI': { exchange: 'NASDAQ', name: 'iShares MSCI ACWI ETF', category: 'region' },
 
+  // ========== Bond ETF ==========
+  // exchange 為 TradingView 的交易所代碼（已逐檔驗證，公債類與綜合債券類交易所不同）
+  'IEF': { exchange: 'NASDAQ', name: 'iShares 7-10 Year Treasury Bond ETF', category: 'bond' },
+  'TLT': { exchange: 'NASDAQ', name: 'iShares 20+ Year Treasury Bond ETF', category: 'bond' },
+  'SHY': { exchange: 'NASDAQ', name: 'iShares 1-3 Year Treasury Bond ETF', category: 'bond' },
+  'AGG': { exchange: 'AMEX',   name: 'iShares Core U.S. Aggregate Bond ETF', category: 'bond' },
+
   // ========== 主題族群（跨交易所，只在「主題」區塊顯示）==========
   'DRAM': { exchange: 'CBOE',   name: 'Roundhill Memory ETF', category: 'theme' },
   'SKHY': { exchange: 'NASDAQ', name: 'SK Hynix Inc.', category: 'theme' },
